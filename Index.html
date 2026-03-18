@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Strategic Brief Builder</title>
+
+<style>
+:root{
+--blue:#12345b;
+--blue2:#1d4f86;
+--accent:#f97316;
+--panel:#ffffff;
+--border:#d9e6f2;
+--bg:#edf4fb;
+}
+
+body{margin:0;font-family:Segoe UI,Arial;background:var(--bg);}
+.header{background:linear-gradient(120deg,var(--blue),var(--blue2));color:white;padding:22px;font-size:24px;font-weight:700;}
+.layout{display:flex;height:calc(100vh - 70px);}
+.builder,.preview{width:50%;overflow:auto;padding:20px;}
+.preview{background:#f7f9fc;border-left:3px solid var(--border);}
+
+.panel{background:white;padding:16px;border-radius:12px;margin-bottom:16px;box-shadow:0 6px 16px rgba(0,0,0,0.08);}
+.card{background:white;border-radius:10px;padding:14px;margin-bottom:14px;box-shadow:0 4px 12px rgba(0,0,0,0.08);}
+
+input,textarea{width:100%;padding:8px;margin-top:6px;border-radius:6px;border:1px solid #ccc;}
+button{margin-top:10px;background:var(--accent);color:white;border:none;padding:10px;border-radius:6px;cursor:pointer;}
+
+.preview-banner{background:linear-gradient(120deg,var(--blue),var(--blue2));color:white;padding:14px;border-radius:10px;margin-bottom:12px;}
+
+table{width:100%;border-collapse:collapse;margin-top:10px;font-size:12px;}
+th,td{border:1px solid #ddd;padding:6px;}
+th{background:var(--blue);color:white;}
+</style>
+</head>
+
+<body>
+
+<div class="header">East Midlands Strategic Brief</div>
+
+<div class="layout">
+
+<div class="builder">
+
+<div class="panel">
+<b>Period</b>
+<input id="period" oninput="updatePreview()">
+<b>Executive Summary</b>
+<textarea id="summary" rows="4" oninput="updatePreview()"></textarea>
+</div>
+
+<div class="panel">
+<b>Upload ESR/TSR (CSV export)</b>
+<input type="file" id="fileInput">
+<button onclick="loadCSV()">Import</button>
+<table id="dataTable"></table>
+</div>
+
+<button onclick="copyHTML()">Copy Email</button>
+
+</div>
+
+<div class="preview">
+<div class="preview-banner">Route Strategic Brief</div>
+<div id="preview"></div>
+</div>
+
+</div>
+
+<script>
+
+function loadCSV(){
+let file=document.getElementById("fileInput").files[0]
+let reader=new FileReader()
+
+reader.onload=function(e){
+let rows=e.target.result.split("\n").map(r=>r.split(","))
+let html=""
+rows.forEach((row,i)=>{
+html+="<tr>"
+row.forEach(cell=>{
+if(i==0){
+html+="<th contenteditable>"+cell+"</th>"
+}else{
+html+="<td contenteditable>"+cell+"</td>"
+}
+})
+html+="</tr>"
+})
+document.getElementById("dataTable").innerHTML=html
+updatePreview()
+}
+reader.readAsText(file)
+}
+
+function generateInsight(){
+
+let rows=document.querySelectorAll("#dataTable tr")
+let count=Math.max(0,rows.length-1)
+
+let risk="🟢 Low"
+if(count>5) risk="🟠 Elevated"
+if(count>8) risk="🔴 High"
+
+return `
+📊 <b>${count} active restrictions</b><br><br>
+🧠 Primary drivers appear to be recurring asset conditions based on uploaded data.<br><br>
+⚙️ Mitigations are in place with ongoing interventions planned.<br><br>
+🚦 Overall risk: <b>${risk}</b>
+`
+}
+
+function updatePreview(){
+
+let insight=generateInsight()
+
+let html=`
+<div class="card"><b>Period:</b> ${period.value}</div>
+
+<div class="card">
+<h3>Executive Summary</h3>
+${summary.value}
+</div>
+
+<div class="card">
+<h3>📊 Strategic Insight</h3>
+${insight}
+</div>
+`
+
+document.getElementById("preview").innerHTML=html
+}
+
+function copyHTML(){
+let html=document.querySelector(".preview").innerHTML
+navigator.clipboard.writeText(html)
+alert("Copied")
+}
+
+</script>
+
+</body>
+</html>
