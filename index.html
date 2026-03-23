@@ -1,2005 +1,726 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Periodic Route Strategic Report Builder</title>
-  <style>
-    :root {
-      --bg: #eef3f8;
-      --panel: #ffffff;
-      --panel-2: #f7f9fc;
-      --text: #1e2a37;
-      --muted: #66758a;
-      --line: #d7e0ea;
-      --accent: #195a8b;
-      --accent-2: #0e3550;
-      --success: #1d7a46;
-      --warn: #b26a00;
-      --danger: #b33a3a;
-      --shadow: 0 10px 26px rgba(18, 37, 63, 0.08);
-      --shadow-sm: 0 4px 12px rgba(18, 37, 63, 0.08);
-      --radius: 18px;
-      --radius-sm: 12px;
-      --btn-shadow: 0 6px 0 rgba(14, 53, 80, 0.12), 0 14px 24px rgba(14, 53, 80, 0.12);
-      --transition: 180ms ease;
-    }
-
-    * { box-sizing: border-box; }
-    html, body { height: 100%; }
-    body {
-      margin: 0;
-      font-family: "Segoe UI", "Inter", "Arial", sans-serif;
-      background: linear-gradient(180deg, #f4f7fb 0%, #e9f0f7 100%);
-      color: var(--text);
-    }
-
-    .app-shell {
-      min-height: 100vh;
-      padding: 20px;
-    }
-
-    .topbar {
-      display: flex;
-      justify-content: space-between;
-      gap: 16px;
-      align-items: center;
-      margin-bottom: 18px;
-      padding: 18px 22px;
-      background: rgba(255,255,255,0.8);
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(215,224,234,0.8);
-      border-radius: 20px;
-      box-shadow: var(--shadow-sm);
-    }
-
-    .brand-block h1 {
-      margin: 0 0 4px;
-      font-size: 1.35rem;
-      letter-spacing: 0.01em;
-    }
-
-    .brand-block p {
-      margin: 0;
-      color: var(--muted);
-      font-size: 0.95rem;
-    }
-
-    .status-bar {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      align-items: center;
-      justify-content: flex-end;
-    }
-
-    .pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      background: var(--panel);
-      border: 1px solid var(--line);
-      border-radius: 999px;
-      padding: 9px 14px;
-      box-shadow: var(--shadow-sm);
-      color: var(--muted);
-      font-size: 0.9rem;
-    }
-
-    .layout {
-      display: grid;
-      grid-template-columns: minmax(340px, 1fr) minmax(340px, 1fr);
-      gap: 20px;
-      align-items: start;
-    }
-
-    .builder,
-    .preview-wrap {
-      min-width: 0;
-    }
-
-    .builder-card,
-    .preview-card,
-    .card {
-      background: var(--panel);
-      border: 1px solid rgba(215,224,234,0.9);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-    }
-
-    .builder-card {
-      padding: 18px;
-    }
-
-    .section-stack {
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-    }
-
-    .card {
-      overflow: hidden;
-      transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition);
-    }
-
-    .card:hover {
-      border-color: #c5d4e6;
-      box-shadow: 0 14px 28px rgba(18, 37, 63, 0.1);
-    }
-
-    .card-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 12px;
-      padding: 16px 18px;
-      background: linear-gradient(180deg, #ffffff 0%, #f7fafd 100%);
-      border-bottom: 1px solid var(--line);
-    }
-
-    .section-meta {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      min-width: 0;
-    }
-
-    .icon {
-      width: 40px;
-      height: 40px;
-      border-radius: 12px;
-      display: grid;
-      place-items: center;
-      background: linear-gradient(180deg, #e9f2fb 0%, #dbe9f7 100%);
-      border: 1px solid #cadced;
-      color: var(--accent-2);
-      font-size: 1.05rem;
-      box-shadow: inset 0 1px 0 rgba(255,255,255,0.85);
-      flex-shrink: 0;
-    }
-
-    .card-header h2,
-    .card-header h3 {
-      margin: 0 0 4px;
-      font-size: 1rem;
-    }
-
-    .helper,
-    .subtle {
-      color: var(--muted);
-      font-size: 0.88rem;
-      line-height: 1.45;
-    }
-
-    .card-body {
-      padding: 18px;
-      display: grid;
-      gap: 14px;
-      transition: max-height 220ms ease, opacity 220ms ease, padding 220ms ease;
-    }
-
-    .collapsed .card-body {
-      max-height: 0;
-      opacity: 0;
-      overflow: hidden;
-      padding-top: 0;
-      padding-bottom: 0;
-    }
-
-    .field-grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 14px;
-    }
-
-    .field,
-    .toggle-row,
-    .upload-group,
-    .mapping-grid,
-    .bullet-builder,
-    .button-row,
-    .validation-list {
-      display: grid;
-      gap: 8px;
-    }
-
-    label {
-      font-weight: 600;
-      font-size: 0.92rem;
-    }
-
-    input[type="text"],
-    input[type="date"],
-    input[type="number"],
-    select,
-    textarea {
-      width: 100%;
-      border: 1px solid var(--line);
-      background: var(--panel-2);
-      border-radius: 12px;
-      padding: 12px 13px;
-      color: var(--text);
-      font: inherit;
-      transition: border-color var(--transition), box-shadow var(--transition), transform var(--transition);
-      outline: none;
-    }
-
-    textarea {
-      resize: vertical;
-      min-height: 110px;
-    }
-
-    input:focus,
-    select:focus,
-    textarea:focus {
-      border-color: #7ca8d0;
-      box-shadow: 0 0 0 4px rgba(25, 90, 139, 0.1);
-      background: #fff;
-    }
-
-    .hint {
-      color: #7b8898;
-      font-size: 0.82rem;
-      line-height: 1.45;
-    }
-
-    .btn,
-    .file-btn {
-      border: 1px solid rgba(25,90,139,0.15);
-      background: linear-gradient(180deg, #ffffff 0%, #e9f1f8 100%);
-      color: var(--accent-2);
-      border-radius: 14px;
-      padding: 11px 15px;
-      font: inherit;
-      font-weight: 700;
-      cursor: pointer;
-      box-shadow: var(--btn-shadow);
-      transition: transform var(--transition), box-shadow var(--transition), filter var(--transition);
-    }
-
-    .btn:hover,
-    .file-btn:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 8px 0 rgba(14, 53, 80, 0.11), 0 16px 28px rgba(14, 53, 80, 0.14);
-      filter: brightness(1.01);
-    }
-
-    .btn:active,
-    .file-btn:active {
-      transform: translateY(3px);
-      box-shadow: 0 3px 0 rgba(14, 53, 80, 0.12), 0 8px 14px rgba(14, 53, 80, 0.11);
-    }
-
-    .btn.primary {
-      background: linear-gradient(180deg, #2a6ea1 0%, #154f7a 100%);
-      color: #fff;
-      border-color: rgba(21,79,122,0.7);
-    }
-
-    .btn.ghost {
-      box-shadow: 0 4px 0 rgba(14,53,80,0.08), 0 10px 20px rgba(14,53,80,0.08);
-    }
-
-    .btn.small {
-      padding: 9px 12px;
-      border-radius: 12px;
-      font-size: 0.88rem;
-      font-weight: 700;
-    }
-
-    .toggle-switch {
-      position: relative;
-      width: 58px;
-      height: 32px;
-      background: #cbd8e6;
-      border-radius: 999px;
-      border: 1px solid #b7c8d9;
-      transition: background var(--transition);
-      flex-shrink: 0;
-    }
-
-    .toggle-switch::after {
-      content: "";
-      position: absolute;
-      top: 3px;
-      left: 3px;
-      width: 24px;
-      height: 24px;
-      border-radius: 50%;
-      background: #fff;
-      box-shadow: 0 2px 6px rgba(17, 34, 51, 0.18);
-      transition: transform var(--transition);
-    }
-
-    .toggle-switch.active {
-      background: linear-gradient(180deg, #2e88c8 0%, #195a8b 100%);
-    }
-
-    .toggle-switch.active::after {
-      transform: translateX(26px);
-    }
-
-    .toggle-label {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 12px;
-      padding: 10px 12px;
-      border: 1px solid var(--line);
-      border-radius: 14px;
-      background: var(--panel-2);
-    }
-
-    .table-wrap {
-      overflow: auto;
-      border: 1px solid var(--line);
-      border-radius: 14px;
-      background: #fff;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      min-width: 700px;
-    }
-
-    th, td {
-      padding: 11px 12px;
-      border-bottom: 1px solid #e7edf4;
-      text-align: left;
-      vertical-align: top;
-      font-size: 0.9rem;
-    }
-
-    th {
-      background: #f4f8fc;
-      color: var(--accent-2);
-      position: sticky;
-      top: 0;
-      z-index: 1;
-    }
-
-    tr:last-child td { border-bottom: 0; }
-
-    .table-editor input,
-    .table-editor select {
-      min-width: 140px;
-      background: #fff;
-      padding: 8px 10px;
-      border-radius: 10px;
-    }
-
-    .preview-wrap {
-      position: relative;
-    }
-
-    .preview-card {
-      position: sticky;
-      top: 20px;
-      padding: 0;
-      overflow: hidden;
-    }
-
-    .preview-toolbar {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      justify-content: space-between;
-      align-items: center;
-      padding: 16px 18px;
-      border-bottom: 1px solid var(--line);
-      background: linear-gradient(180deg, #ffffff 0%, #f7fafd 100%);
-    }
-
-    .preview-title h2 {
-      margin: 0 0 4px;
-      font-size: 1.05rem;
-    }
-
-    .preview-body {
-      max-height: calc(100vh - 148px);
-      overflow: auto;
-      padding: 22px;
-      background: linear-gradient(180deg, #ffffff 0%, #fbfcfe 100%);
-    }
-
-    .report {
-      max-width: 900px;
-      margin: 0 auto;
-      color: #1d2935;
-      line-height: 1.55;
-    }
-
-    .report-header {
-      padding: 0 0 18px;
-      border-bottom: 2px solid #dbe6f1;
-      margin-bottom: 18px;
-    }
-
-    .report-header h1 {
-      margin: 0 0 10px;
-      font-size: 1.6rem;
-      color: #0f3550;
-    }
-
-    .meta-grid {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 12px;
-    }
-
-    .meta-chip {
-      background: #f4f8fc;
-      border: 1px solid #dbe6f1;
-      border-radius: 12px;
-      padding: 10px 12px;
-      font-size: 0.92rem;
-    }
-
-    .report-section {
-      margin: 0 0 18px;
-      padding: 16px 18px;
-      border: 1px solid #dbe6f1;
-      border-radius: 16px;
-      background: linear-gradient(180deg, #ffffff 0%, #fafcfe 100%);
-      box-shadow: 0 6px 18px rgba(18,37,63,0.05);
-    }
-
-    .report-section h3 {
-      margin: 0 0 10px;
-      font-size: 1.05rem;
-      color: #0f3550;
-    }
-
-    .report-section p,
-    .report-section li {
-      margin: 0 0 8px;
-      white-space: pre-wrap;
-    }
-
-    .report-section ul {
-      margin: 0;
-      padding-left: 20px;
-    }
-
-    .report-note {
-      color: #5e6d7d;
-      font-style: italic;
-    }
-
-    .empty-state {
-      padding: 24px;
-      text-align: center;
-      color: var(--muted);
-      border: 1px dashed #c7d5e5;
-      background: #f7fafe;
-      border-radius: 16px;
-    }
-
-    .callout {
-      padding: 12px 14px;
-      border-radius: 14px;
-      background: #f7fafe;
-      border: 1px solid #d9e6f2;
-      color: #4e5f71;
-      font-size: 0.9rem;
-      line-height: 1.45;
-    }
-
-    .validation-list {
-      padding: 14px;
-      border-radius: 14px;
-      background: #fff8ef;
-      border: 1px solid #f2d49f;
-    }
-
-    .validation-list strong { color: #8b5600; }
-    .validation-list ul { margin: 0; padding-left: 20px; }
-
-    .success-banner,
-    .error-banner {
-      display: none;
-      padding: 10px 12px;
-      border-radius: 12px;
-      font-size: 0.9rem;
-      font-weight: 600;
-    }
-
-    .success-banner.show {
-      display: block;
-      background: #edf8f1;
-      border: 1px solid #b6e0c4;
-      color: #185d36;
-    }
-
-    .error-banner.show {
-      display: block;
-      background: #fff1f1;
-      border: 1px solid #efc0c0;
-      color: #8f2d2d;
-    }
-
-    .muted-inline {
-      color: var(--muted);
-      font-size: 0.88rem;
-    }
-
-    .two-buttons,
-    .three-buttons {
-      display: grid;
-      gap: 10px;
-    }
-
-    .two-buttons { grid-template-columns: repeat(2, minmax(0,1fr)); }
-    .three-buttons { grid-template-columns: repeat(3, minmax(0,1fr)); }
-
-    .bullet-builder {
-      grid-template-columns: 1fr auto;
-      align-items: end;
-    }
-
-    .chip-list {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-
-    .chip {
-      display: inline-flex;
-      gap: 8px;
-      align-items: center;
-      padding: 8px 10px;
-      border-radius: 999px;
-      background: #eef5fb;
-      border: 1px solid #d4e3f2;
-      font-size: 0.88rem;
-    }
-
-    .chip button {
-      border: 0;
-      background: transparent;
-      cursor: pointer;
-      color: #7d8ea0;
-      font-weight: 700;
-    }
-
-    .footer-note {
-      margin-top: 18px;
-      color: var(--muted);
-      font-size: 0.86rem;
-      text-align: center;
-    }
-
-    @media (max-width: 1150px) {
-      .layout { grid-template-columns: 1fr; }
-      .preview-card { position: relative; top: 0; }
-      .preview-body { max-height: none; }
-    }
-
-    @media (max-width: 780px) {
-      .app-shell { padding: 12px; }
-      .topbar { padding: 14px; }
-      .field-grid, .meta-grid, .two-buttons, .three-buttons { grid-template-columns: 1fr; }
-      .card-header { align-items: flex-start; }
-      .status-bar { justify-content: flex-start; }
-      .preview-toolbar { align-items: flex-start; }
-    }
-  </style>
+<meta charset="UTF-8" />
+<title>Periodic Route Strategic Report Builder</title>
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<style>
+  :root{
+    --bg:#f3f5f7; --panel:#ffffff; --ink:#1f2937; --muted:#6b7280; --line:#d7dde5;
+    --brand:#0b5cab; --brand-dark:#084684; --shadow:0 8px 24px rgba(16,24,40,.08);
+    --radius:14px;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:Segoe UI, Arial, sans-serif;background:var(--bg);color:var(--ink)}
+  .container{display:flex;min-height:100vh}
+  .left,.right{width:50%;padding:20px}
+  .left{overflow:auto}
+  .right{overflow:auto;position:sticky;top:0;height:100vh;background:#fcfcfd;border-left:1px solid var(--line)}
+  .card{
+    background:var(--panel); border:1px solid #e8edf3; border-radius:var(--radius);
+    padding:16px; margin-bottom:16px; box-shadow:var(--shadow)
+  }
+  h1,h2,h3{margin:0 0 12px}
+  h1{font-size:22px}
+  h2{font-size:18px}
+  h3{font-size:16px}
+  label{display:block;font-size:13px;font-weight:600;margin:12px 0 6px}
+  input, select, textarea{
+    width:100%; padding:10px 12px; border:1px solid #cfd8e3; border-radius:10px;
+    background:#fff; color:var(--ink); font:inherit;
+  }
+  textarea{resize:vertical; min-height:100px}
+  .helper{font-size:12px;color:var(--muted);margin-top:4px}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .btnbar{display:flex;gap:10px;flex-wrap:wrap}
+  button{
+    border:0; border-radius:10px; padding:11px 14px; color:#fff; font-weight:600; cursor:pointer;
+    background:linear-gradient(180deg,var(--brand),var(--brand-dark));
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.25), 0 6px 16px rgba(11,92,171,.22);
+    transition:transform .15s ease, box-shadow .15s ease, filter .15s ease;
+  }
+  button:hover{transform:translateY(-1px);filter:brightness(1.02)}
+  button.secondary{background:linear-gradient(180deg,#6b7280,#4b5563);box-shadow:inset 0 1px 0 rgba(255,255,255,.2),0 6px 16px rgba(75,85,99,.18)}
+  .status{font-size:13px;color:var(--muted);margin-top:8px}
+  table{width:100%;border-collapse:collapse;font-size:13px;margin-top:10px}
+  th,td{border:1px solid #dde3ea;padding:7px 8px;text-align:left;vertical-align:top}
+  th{background:#f7f9fb}
+  .preview-report h2{font-size:22px;margin-bottom:6px}
+  .meta{font-size:13px;color:#4b5563;margin-bottom:18px}
+  .section{margin-bottom:18px}
+  .section-title{font-size:16px;font-weight:700;border-bottom:2px solid #e8edf3;padding-bottom:6px;margin-bottom:10px}
+  .warn{color:#9a3412}
+  .ok{color:#166534}
+  @media (max-width: 980px){
+    .container{display:block}
+    .left,.right{width:100%;height:auto;position:static}
+    .row{grid-template-columns:1fr}
+  }
+</style>
 </head>
 <body>
-  <div class="app-shell">
-    <div class="topbar">
-      <div class="brand-block">
-        <h1>Periodic Route Strategic Report Builder</h1>
-        <p>Executive-grade route reporting for periodic strategic updates.</p>
-      </div>
-      <div class="status-bar">
-        <div class="pill">💾 Auto-save enabled</div>
-        <div class="pill">🧾 Offline-ready single file</div>
-        <div class="pill" id="saveStatus">Ready</div>
-      </div>
+<div class="container">
+  <div class="left">
+    <div class="card">
+      <h1>Periodic Route Strategic Report Builder</h1>
+      <div class="helper">Single-file offline builder with embedded spreadsheet parsing for Current ESRs and Current TSRs.</div>
     </div>
 
-    <div class="layout">
-      <div class="builder">
-        <div class="builder-card">
-          <div class="section-stack">
-
-            <section class="card" data-section-card="header">
-              <div class="card-header">
-                <div class="section-meta">
-                  <div class="icon">🧭</div>
-                  <div>
-                    <h2>Header / Report Configuration</h2>
-                    <div class="helper">Set period, title, date and author details.</div>
-                  </div>
-                </div>
-                <div class="toggle-label">
-                  <span class="muted-inline">Always on</span>
-                  <div class="toggle-switch active"></div>
-                </div>
-              </div>
-              <div class="card-body">
-                <div class="field-grid">
-                  <div class="field">
-                    <label for="period">Period</label>
-                    <select id="period"></select>
-                  </div>
-                  <div class="field">
-                    <label for="reportDate">Report date</label>
-                    <input id="reportDate" type="date" />
-                  </div>
-                </div>
-                <div class="field">
-                  <label for="title">Report title</label>
-                  <input id="title" type="text" />
-                </div>
-                <div class="field-grid">
-                  <div class="field">
-                    <label for="author">Author</label>
-                    <input id="author" type="text" placeholder="Enter author / SNDM name" />
-                  </div>
-                  <div class="field">
-                    <label for="route">Route / business area</label>
-                    <input id="route" type="text" value="East Midlands Route" />
-                  </div>
-                </div>
-                <div class="callout">The title updates automatically when Period changes, but can be edited manually if a bespoke heading is needed.</div>
-              </div>
-            </section>
-
-            <section class="card" data-section-card="executive">
-              <div class="card-header">
-                <div class="section-meta">
-                  <div class="icon">📌</div>
-                  <div>
-                    <h2>Executive Summary</h2>
-                    <div class="helper">Summarise performance, key risks, and overall route position.</div>
-                  </div>
-                </div>
-                <button class="toggle-label section-toggle" data-target="executive" type="button">
-                  <span id="label-executive">On</span>
-                  <div class="toggle-switch active" id="toggle-executive"></div>
-                </button>
-              </div>
-              <div class="card-body">
-                <div class="field">
-                  <label for="executiveSummary">Executive commentary</label>
-                  <textarea id="executiveSummary" placeholder="Summarise performance, key risks, and overall route position"></textarea>
-                </div>
-                <div class="three-buttons">
-                  <button class="btn small ghost copy-section-btn" data-section="executive" type="button">Copy Executive Summary</button>
-                  <button class="btn small ghost collapse-btn" data-card="executive" type="button">Collapse / Expand</button>
-                  <button class="btn small ghost clear-field-btn" data-clear="executiveSummary" type="button">Clear</button>
-                </div>
-              </div>
-            </section>
-
-            <section class="card" data-section-card="tsr">
-              <div class="card-header">
-                <div class="section-meta">
-                  <div class="icon">🚦</div>
-                  <div>
-                    <h2>TSR / ESR Analysis</h2>
-                    <div class="helper">Upload an .xlsx file, map columns if needed, review extracted rows, then refine the narrative.</div>
-                  </div>
-                </div>
-                <button class="toggle-label section-toggle" data-target="tsr" type="button">
-                  <span id="label-tsr">On</span>
-                  <div class="toggle-switch active" id="toggle-tsr"></div>
-                </button>
-              </div>
-              <div class="card-body">
-                <div class="upload-group">
-                  <label for="tsrFile">Upload TSR / ESR spreadsheet (.xlsx)</label>
-                  <input id="tsrFile" type="file" accept=".xlsx" />
-                  <div class="hint">The parser reads the workbook locally, inspects the first worksheet by default, and matches column headers to the required fields.</div>
-                  <div class="success-banner" id="tsrSuccess"></div>
-                  <div class="error-banner" id="tsrError"></div>
-                </div>
-                <div id="tsrMappingWrap" style="display:none;" class="mapping-grid"></div>
-                <div id="tsrTableWrap"></div>
-                <div class="field">
-                  <label for="tsrSummary">Auto summary (editable)</label>
-                  <textarea id="tsrSummary" placeholder="Auto-generated summary will appear here once a spreadsheet is uploaded."></textarea>
-                </div>
-                <div class="field">
-                  <label for="tsrCommentary">SNDM commentary / insight</label>
-                  <textarea id="tsrCommentary" placeholder="Add corridor impact, risk outlook, mitigation, focus areas, or priorities for follow-up."></textarea>
-                </div>
-                <div class="three-buttons">
-                  <button class="btn small ghost" id="tsrRemapBtn" type="button">Remap Columns</button>
-                  <button class="btn small ghost copy-section-btn" data-section="tsr" type="button">Copy TSR / ESR Section</button>
-                  <button class="btn small ghost" id="tsrClearBtn" type="button">Clear Uploaded Data</button>
-                </div>
-              </div>
-            </section>
-
-            <section class="card" data-section-card="assets">
-              <div class="card-header">
-                <div class="section-meta">
-                  <div class="icon">🛠️</div>
-                  <div>
-                    <h2>Out of Use Assets</h2>
-                    <div class="helper">Upload an .xlsx file for failed or unavailable assets and capture operational significance.</div>
-                  </div>
-                </div>
-                <button class="toggle-label section-toggle" data-target="assets" type="button">
-                  <span id="label-assets">On</span>
-                  <div class="toggle-switch active" id="toggle-assets"></div>
-                </button>
-              </div>
-              <div class="card-body">
-                <div class="upload-group">
-                  <label for="assetsFile">Upload out of use assets spreadsheet (.xlsx)</label>
-                  <input id="assetsFile" type="file" accept=".xlsx" />
-                  <div class="hint">The parser uses the same local workbook engine and can be remapped if your source headers vary between reports.</div>
-                  <div class="success-banner" id="assetsSuccess"></div>
-                  <div class="error-banner" id="assetsError"></div>
-                </div>
-                <div id="assetsMappingWrap" style="display:none;" class="mapping-grid"></div>
-                <div id="assetsTableWrap"></div>
-                <div class="field">
-                  <label for="assetsSummary">Auto summary (editable)</label>
-                  <textarea id="assetsSummary" placeholder="Auto-generated summary will appear here once a spreadsheet is uploaded."></textarea>
-                </div>
-                <div class="field">
-                  <label for="assetsCommentary">SNDM commentary / insight</label>
-                  <textarea id="assetsCommentary" placeholder="Add operational effect, service resilience considerations, dependency risks, workarounds, or escalation points."></textarea>
-                </div>
-                <div class="three-buttons">
-                  <button class="btn small ghost" id="assetsRemapBtn" type="button">Remap Columns</button>
-                  <button class="btn small ghost copy-section-btn" data-section="assets" type="button">Copy Assets Section</button>
-                  <button class="btn small ghost" id="assetsClearBtn" type="button">Clear Uploaded Data</button>
-                </div>
-              </div>
-            </section>
-
-            <section class="card" data-section-card="engineering">
-              <div class="card-header">
-                <div class="section-meta">
-                  <div class="icon">🏗️</div>
-                  <div>
-                    <h2>Future Disruptive Engineering Works</h2>
-                    <div class="helper">Capture forward planning impacts, timing, mitigations and route readiness narrative.</div>
-                  </div>
-                </div>
-                <button class="toggle-label section-toggle" data-target="engineering" type="button">
-                  <span id="label-engineering">On</span>
-                  <div class="toggle-switch active" id="toggle-engineering"></div>
-                </button>
-              </div>
-              <div class="card-body">
-                <div class="field-grid">
-                  <div class="field">
-                    <label for="engineeringLocation">Location / corridor</label>
-                    <input id="engineeringLocation" type="text" placeholder="e.g. St Pancras – Bedford corridor" />
-                  </div>
-                  <div class="field">
-                    <label for="engineeringDates">Dates / period</label>
-                    <input id="engineeringDates" type="text" placeholder="e.g. 12–14 April 2026" />
-                  </div>
-                </div>
-                <div class="field">
-                  <label for="engineeringImpact">Operational impact</label>
-                  <textarea id="engineeringImpact" placeholder="Set out anticipated service impact, capability constraints, diversions, resource implications and passenger risk."></textarea>
-                </div>
-                <div class="field">
-                  <label for="engineeringNarrative">Forward planning narrative</label>
-                  <textarea id="engineeringNarrative" placeholder="Add readiness assessment, dependencies, mitigations, outstanding decisions and strategic commentary."></textarea>
-                </div>
-                <div class="three-buttons">
-                  <button class="btn small ghost copy-section-btn" data-section="engineering" type="button">Copy Engineering Works Section</button>
-                  <button class="btn small ghost collapse-btn" data-card="engineering" type="button">Collapse / Expand</button>
-                  <button class="btn small ghost" id="engineeringClearBtn" type="button">Clear</button>
-                </div>
-              </div>
-            </section>
-
-            <section class="card" data-section-card="events">
-              <div class="card-header">
-                <div class="section-meta">
-                  <div class="icon">📅</div>
-                  <div>
-                    <h2>Disruptive Events</h2>
-                    <div class="helper">Use for planned external events, possessions, sporting fixtures, concerts, demonstrations or other known disruptors.</div>
-                  </div>
-                </div>
-                <button class="toggle-label section-toggle" data-target="events" type="button">
-                  <span id="label-events">On</span>
-                  <div class="toggle-switch active" id="toggle-events"></div>
-                </button>
-              </div>
-              <div class="card-body">
-                <div class="bullet-builder">
-                  <div class="field">
-                    <label for="eventBulletInput">Quick bullet builder</label>
-                    <input id="eventBulletInput" type="text" placeholder="Example: Wembley event drives additional late evening demand on key services" />
-                  </div>
-                  <button class="btn small" id="addEventBulletBtn" type="button">Add Bullet</button>
-                </div>
-                <div id="eventChips" class="chip-list"></div>
-                <div class="field">
-                  <label for="eventsText">Event narrative / commentary</label>
-                  <textarea id="eventsText" placeholder="Examples: Sporting events, concerts, major possessions, city-centre events, demonstrations, weather-linked events, or other known external pressures."></textarea>
-                </div>
-                <div class="three-buttons">
-                  <button class="btn small ghost copy-section-btn" data-section="events" type="button">Copy Disruptive Events Section</button>
-                  <button class="btn small ghost collapse-btn" data-card="events" type="button">Collapse / Expand</button>
-                  <button class="btn small ghost" id="eventsClearBtn" type="button">Clear</button>
-                </div>
-              </div>
-            </section>
-
-            <section class="card">
-              <div class="card-header">
-                <div class="section-meta">
-                  <div class="icon">📋</div>
-                  <div>
-                    <h2>Report Output & Validation</h2>
-                    <div class="helper">Copy the full report, omit empty sections, or lift individual sections into Teams or email.</div>
-                  </div>
-                </div>
-                <div class="toggle-label">
-                  <span class="muted-inline">Active</span>
-                  <div class="toggle-switch active"></div>
-                </div>
-              </div>
-              <div class="card-body">
-                <div id="validationPanel" class="validation-list" style="display:none;"></div>
-                <div class="three-buttons">
-                  <button class="btn primary" id="copyFullBtn" type="button">Copy Full Report</button>
-                  <button class="btn" id="copyWithoutEmptyBtn" type="button">Copy Without Empty Sections</button>
-                  <button class="btn ghost" id="copyTeamsBtn" type="button">Copy Teams / Email Format</button>
-                </div>
-                <div class="two-buttons">
-                  <button class="btn ghost" id="resetAllBtn" type="button">Reset All</button>
-                  <button class="btn ghost" id="downloadTxtBtn" type="button">Download Report as .txt</button>
-                </div>
-                <div class="callout">Local session data is stored in your browser using localStorage, so the builder reopens with the latest draft.</div>
-              </div>
-            </section>
-
-          </div>
+    <div class="card">
+      <h2>Report Config</h2>
+      <div class="row">
+        <div>
+          <label for="period">Period</label>
+          <select id="period"></select>
+        </div>
+        <div>
+          <label for="date">Date</label>
+          <input id="date" type="date" />
         </div>
       </div>
-
-      <div class="preview-wrap">
-        <div class="preview-card">
-          <div class="preview-toolbar">
-            <div class="preview-title">
-              <h2>Live Preview</h2>
-              <div class="subtle">Mirrors the final executive-ready output structure.</div>
-            </div>
-            <div class="button-row two-buttons" style="min-width:min(360px,100%);">
-              <button class="btn small ghost" id="copyPreviewBtn" type="button">Copy Preview Text</button>
-              <button class="btn small ghost" id="copyNoEmptyPreviewBtn" type="button">Copy Without Empty Sections</button>
-            </div>
-          </div>
-          <div class="preview-body">
-            <div id="preview" class="report"></div>
-          </div>
-        </div>
-      </div>
+      <label for="author">Author</label>
+      <input id="author" type="text" placeholder="SNDM name" />
     </div>
 
-    <div class="footer-note">Single-file build designed for local use or GitHub Pages hosting. No external libraries or CDN dependencies.</div>
+    <div class="card">
+      <h2>Executive Summary</h2>
+      <div class="helper">Summarise performance, key risks, and overall route position. The highest delay ESR insight will be added automatically after upload.</div>
+      <textarea id="summary" placeholder="Summarise performance, key risks, and overall route position"></textarea>
+    </div>
+
+    <div class="card">
+      <h2>Current TSRs / ESRs Upload</h2>
+      <div class="helper">Upload one .xlsx file containing sheets named exactly <b>Current ESRs</b> and <b>Current TSRs</b>.</div>
+      <input id="fileInput" type="file" accept=".xlsx" />
+      <div id="uploadStatus" class="status">No file loaded.</div>
+    </div>
+
+    <div class="card">
+      <h2>Future Disruptive Engineering Works</h2>
+      <textarea id="engineering" placeholder="Location, dates, impact, mitigations and route planning narrative"></textarea>
+    </div>
+
+    <div class="card">
+      <h2>Disruptive Events</h2>
+      <textarea id="events" placeholder="Sporting events, concerts, major possessions, external risks and expected operational effect"></textarea>
+    </div>
+
+    <div class="card">
+      <div class="btnbar">
+        <button id="copyFullBtn" type="button">Copy Full Report</button>
+        <button id="copyPreviewBtn" class="secondary" type="button">Copy Preview Text</button>
+      </div>
+    </div>
   </div>
 
+  <div class="right">
+    <div class="card preview-report">
+      <h2>Live Preview</h2>
+      <div id="preview"></div>
+    </div>
+  </div>
+</div>
+
 <script>
-(() => {
-  'use strict';
+(function(){
+  "use strict";
 
-  const STORAGE_KEY = 'periodic_route_strategic_report_builder_v1';
-  const DEFAULT_ROUTE = 'East Midlands Route';
-  const REQUIRED_TSR_FIELDS = ['location', 'type', 'speedRestriction', 'startDate', 'duration'];
-  const REQUIRED_ASSET_FIELDS = ['assetType', 'location', 'durationOut', 'impactLevel'];
-
+  const $ = id => document.getElementById(id);
   const state = {
-    header: {
-      period: '1',
-      reportDate: todayIso(),
-      title: '',
-      titleManual: false,
-      author: '',
-      route: DEFAULT_ROUTE
-    },
-    sections: {
-      executive: true,
-      tsr: true,
-      assets: true,
-      engineering: true,
-      events: true
-    },
-    content: {
-      executiveSummary: '',
-      tsrSummary: '',
-      tsrCommentary: '',
-      assetsSummary: '',
-      assetsCommentary: '',
-      engineeringLocation: '',
-      engineeringDates: '',
-      engineeringImpact: '',
-      engineeringNarrative: '',
-      eventsText: ''
-    },
-    bullets: [],
-    tsrData: {
-      rows: [],
-      rawRows: [],
-      headers: [],
-      workbookMeta: null,
-      mapping: {
-        location: '',
-        type: '',
-        speedRestriction: '',
-        startDate: '',
-        duration: ''
-      }
-    },
-    assetsData: {
-      rows: [],
-      rawRows: [],
-      headers: [],
-      workbookMeta: null,
-      mapping: {
-        assetType: '',
-        location: '',
-        durationOut: '',
-        impactLevel: ''
-      }
-    }
+    esrData: [],
+    tsrData: [],
+    summaryBase: "",
+    workbookMeta: { loaded:false, filename:"" }
   };
 
-  const el = {};
+  const STORAGE_KEY = "periodic_route_strategic_report_builder_state_v2";
 
-  document.addEventListener('DOMContentLoaded', init);
-
-  function init() {
-    cacheElements();
-    populatePeriodDropdown();
-    bindCoreEvents();
-    loadState();
-    applyStateToUi();
-    renderAll();
+  function escapeHtml(value){
+    return String(value ?? "").replace(/[&<>"']/g, ch => ({
+      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+    }[ch]));
   }
 
-  function cacheElements() {
-    [
-      'period','reportDate','title','author','route','executiveSummary','tsrSummary','tsrCommentary',
-      'assetsSummary','assetsCommentary','engineeringLocation','engineeringDates','engineeringImpact',
-      'engineeringNarrative','eventsText','preview','copyFullBtn','copyWithoutEmptyBtn','copyTeamsBtn',
-      'copyPreviewBtn','copyNoEmptyPreviewBtn','resetAllBtn','downloadTxtBtn','saveStatus','validationPanel',
-      'tsrFile','assetsFile','tsrTableWrap','assetsTableWrap','tsrMappingWrap','assetsMappingWrap',
-      'tsrSuccess','tsrError','assetsSuccess','assetsError','eventBulletInput','addEventBulletBtn','eventChips',
-      'tsrRemapBtn','assetsRemapBtn','tsrClearBtn','assetsClearBtn','engineeringClearBtn','eventsClearBtn'
-    ].forEach(id => el[id] = document.getElementById(id));
+  function setStatus(message, cls){
+    const el = $("uploadStatus");
+    el.className = "status" + (cls ? " " + cls : "");
+    el.textContent = message;
   }
 
-  function populatePeriodDropdown() {
-    const frag = document.createDocumentFragment();
-    for (let i = 1; i <= 13; i++) {
-      const opt = document.createElement('option');
+  function persist(){
+    const payload = {
+      period: $("period").value,
+      date: $("date").value,
+      author: $("author").value,
+      summary: $("summary").value,
+      engineering: $("engineering").value,
+      events: $("events").value,
+      esrData: state.esrData,
+      tsrData: state.tsrData,
+      summaryBase: state.summaryBase,
+      workbookMeta: state.workbookMeta
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+  }
+
+  function hydrate(){
+    for(let i=1;i<=13;i++){
+      const opt = document.createElement("option");
       opt.value = String(i);
-      opt.textContent = `Period ${i}`;
-      frag.appendChild(opt);
+      opt.textContent = String(i);
+      $("period").appendChild(opt);
     }
-    el.period.innerHTML = '';
-    el.period.appendChild(frag);
-  }
+    $("date").value = new Date().toISOString().slice(0,10);
 
-  function bindCoreEvents() {
-    el.period.addEventListener('change', () => {
-      state.header.period = el.period.value;
-      if (!state.header.titleManual) {
-        state.header.title = defaultTitle();
-        el.title.value = state.header.title;
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(!raw){ render(); return; }
+
+    try{
+      const data = JSON.parse(raw);
+      if(data.period) $("period").value = data.period;
+      if(data.date) $("date").value = data.date;
+      if(data.author) $("author").value = data.author;
+      if(data.summary != null) $("summary").value = data.summary;
+      if(data.engineering) $("engineering").value = data.engineering;
+      if(data.events) $("events").value = data.events;
+      state.esrData = Array.isArray(data.esrData) ? data.esrData : [];
+      state.tsrData = Array.isArray(data.tsrData) ? data.tsrData : [];
+      state.summaryBase = data.summaryBase || computeSummaryBase($("summary").value);
+      state.workbookMeta = data.workbookMeta || { loaded:false, filename:"" };
+      if(state.workbookMeta.loaded){
+        setStatus(`Loaded previously parsed workbook${state.workbookMeta.filename ? ": " + state.workbookMeta.filename : "."}`, "ok");
       }
-      persistAndRender();
-    });
-
-    bindText('reportDate', value => state.header.reportDate = value);
-    bindText('author', value => state.header.author = value);
-    bindText('route', value => {
-      state.header.route = value || DEFAULT_ROUTE;
-      if (!state.header.titleManual) {
-        state.header.title = defaultTitle();
-        el.title.value = state.header.title;
-      }
-    });
-    bindText('title', value => {
-      state.header.title = value;
-      state.header.titleManual = value.trim() !== defaultTitle().trim();
-    });
-
-    ['executiveSummary','tsrSummary','tsrCommentary','assetsSummary','assetsCommentary','engineeringLocation','engineeringDates','engineeringImpact','engineeringNarrative','eventsText']
-      .forEach(id => bindText(id, value => state.content[id] = value));
-
-    document.querySelectorAll('.section-toggle').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const key = btn.dataset.target;
-        state.sections[key] = !state.sections[key];
-        updateSectionToggleUi(key);
-        persistAndRender();
-      });
-    });
-
-    document.querySelectorAll('.collapse-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const key = btn.dataset.card;
-        const card = document.querySelector(`[data-section-card="${key}"]`);
-        if (card) card.classList.toggle('collapsed');
-      });
-    });
-
-    document.querySelectorAll('.clear-field-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const id = btn.dataset.clear;
-        if (el[id]) {
-          el[id].value = '';
-          state.content[id] = '';
-          persistAndRender();
-        }
-      });
-    });
-
-    document.querySelectorAll('.copy-section-btn').forEach(btn => {
-      btn.addEventListener('click', () => copySection(btn.dataset.section));
-    });
-
-    el.copyFullBtn.addEventListener('click', () => copyText(buildReportText({ omitEmpty: false })));
-    el.copyWithoutEmptyBtn.addEventListener('click', () => copyText(buildReportText({ omitEmpty: true })));
-    el.copyTeamsBtn.addEventListener('click', () => copyText(buildReportText({ omitEmpty: true, teamsFormat: true })));
-    el.copyPreviewBtn.addEventListener('click', () => copyText(buildReportText({ omitEmpty: false })));
-    el.copyNoEmptyPreviewBtn.addEventListener('click', () => copyText(buildReportText({ omitEmpty: true })));
-    el.downloadTxtBtn.addEventListener('click', downloadReport);
-    el.resetAllBtn.addEventListener('click', resetAll);
-
-    el.addEventBulletBtn.addEventListener('click', addEventBullet);
-    el.eventBulletInput.addEventListener('keydown', evt => {
-      if (evt.key === 'Enter') {
-        evt.preventDefault();
-        addEventBullet();
-      }
-    });
-
-    el.tsrFile.addEventListener('change', evt => handleWorkbookUpload(evt, 'tsr'));
-    el.assetsFile.addEventListener('change', evt => handleWorkbookUpload(evt, 'assets'));
-    el.tsrRemapBtn.addEventListener('click', () => showMappingControls('tsr'));
-    el.assetsRemapBtn.addEventListener('click', () => showMappingControls('assets'));
-    el.tsrClearBtn.addEventListener('click', () => clearUploadData('tsr'));
-    el.assetsClearBtn.addEventListener('click', () => clearUploadData('assets'));
-    el.engineeringClearBtn.addEventListener('click', () => clearEngineering());
-    el.eventsClearBtn.addEventListener('click', () => clearEvents());
-  }
-
-  function bindText(id, setter) {
-    const node = el[id];
-    node.addEventListener('input', () => {
-      setter(node.value);
-      persistAndRender();
-    });
-  }
-
-  function updateSectionToggleUi(key) {
-    const toggle = document.getElementById(`toggle-${key}`);
-    const label = document.getElementById(`label-${key}`);
-    if (!toggle || !label) return;
-    toggle.classList.toggle('active', !!state.sections[key]);
-    label.textContent = state.sections[key] ? 'On' : 'Off';
-  }
-
-  function loadState() {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) {
-        state.header.title = defaultTitle();
-        return;
-      }
-      const parsed = JSON.parse(raw);
-      deepAssign(state, parsed);
-      if (!state.header.title) state.header.title = defaultTitle();
-    } catch (err) {
-      console.error('Could not load saved state', err);
-      state.header.title = defaultTitle();
+    }catch(e){
+      console.warn("Could not restore previous state", e);
     }
+    render();
   }
 
-  function applyStateToUi() {
-    el.period.value = state.header.period;
-    el.reportDate.value = state.header.reportDate || todayIso();
-    el.title.value = state.header.title || defaultTitle();
-    el.author.value = state.header.author || '';
-    el.route.value = state.header.route || DEFAULT_ROUTE;
-
-    Object.keys(state.content).forEach(key => {
-      if (el[key]) el[key].value = state.content[key] || '';
-    });
-
-    Object.keys(state.sections).forEach(updateSectionToggleUi);
-    renderBulletChips();
-    renderEditableTable('tsr');
-    renderEditableTable('assets');
-    if (state.tsrData.headers.length) showMappingControls('tsr', false);
-    if (state.assetsData.headers.length) showMappingControls('assets', false);
+  function computeSummaryBase(summaryText){
+    const marker = "\n\nHighest delay generating ESR currently impacting the route is at ";
+    const idx = summaryText.indexOf(marker);
+    return idx >= 0 ? summaryText.slice(0, idx).trimEnd() : summaryText;
   }
 
-  function persistAndRender() {
-    persist();
-    renderAll();
+  function updateSummaryWithInsight(){
+    const base = state.summaryBase || "";
+    const insight = buildTopEsrInsight();
+    $("summary").value = insight ? (base ? `${base}\n\n${insight}` : insight) : base;
   }
 
-  function persist() {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-      flashSaveStatus('Saved');
-    } catch (err) {
-      console.error('Save failed', err);
-      flashSaveStatus('Save failed');
-    }
+  function buildTopEsrInsight(){
+    if(!state.esrData.length) return "";
+    const top = state.esrData[0];
+    const location = top.location || "unspecified location";
+    const ime = top.ime || "unspecified IME";
+    const mins = normaliseNumber(top.delayTotal);
+    const minsText = Number.isFinite(mins) ? mins.toLocaleString() : String(top.delayTotal || 0);
+    return `Highest delay generating ESR currently impacting the route is at ${location} (IME: ${ime}) responsible for ${minsText} cumulative delay minutes.`;
   }
 
-  function flashSaveStatus(message) {
-    el.saveStatus.textContent = message;
-    clearTimeout(flashSaveStatus._t);
-    flashSaveStatus._t = setTimeout(() => {
-      el.saveStatus.textContent = 'Ready';
-    }, 1200);
+  function normaliseNumber(v){
+    if(v == null || v === "") return NaN;
+    const cleaned = String(v).replace(/,/g, "").trim();
+    const n = Number(cleaned);
+    return Number.isFinite(n) ? n : NaN;
   }
 
-  function renderAll() {
-    renderValidation();
-    renderPreview();
-  }
+  function render(){
+    const period = $("period").value || "1";
+    const date = $("date").value || "";
+    const author = $("author").value || "";
+    const summary = $("summary").value || "";
+    const engineering = $("engineering").value || "";
+    const events = $("events").value || "";
 
-  function renderValidation() {
-    const warnings = [];
-    if (!state.content.executiveSummary.trim() && state.sections.executive) warnings.push('Executive Summary is enabled but empty.');
-    if (state.sections.tsr && !state.content.tsrSummary.trim() && state.tsrData.rows.length === 0) warnings.push('TSR / ESR section has no uploaded data or summary.');
-    if (state.sections.assets && !state.content.assetsSummary.trim() && state.assetsData.rows.length === 0) warnings.push('Out of Use Assets section has no uploaded data or summary.');
-    if (state.sections.engineering && ![state.content.engineeringLocation, state.content.engineeringDates, state.content.engineeringImpact, state.content.engineeringNarrative].join('').trim()) warnings.push('Future Disruptive Engineering Works is enabled but empty.');
-    if (state.sections.events && !state.content.eventsText.trim() && state.bullets.length === 0) warnings.push('Disruptive Events is enabled but empty.');
+    const sections = [];
+    sections.push(`
+      <div class="section">
+        <div class="section-title">Executive Summary</div>
+        <div>${escapeHtml(summary).replace(/\n/g,"<br>") || "<span class='helper'>No summary entered.</span>"}</div>
+      </div>
+    `);
 
-    if (!warnings.length) {
-      el.validationPanel.style.display = 'none';
-      el.validationPanel.innerHTML = '';
-      return;
-    }
-
-    el.validationPanel.style.display = 'block';
-    el.validationPanel.innerHTML = `<strong>Validation prompts</strong><ul>${warnings.map(w => `<li>${escapeHtml(w)}</li>`).join('')}</ul>`;
-  }
-
-  function renderPreview() {
-    el.preview.innerHTML = buildReportHtml({ omitEmpty: false });
-  }
-
-  function defaultTitle() {
-    return `${state.header.route || DEFAULT_ROUTE} – Period ${state.header.period} Strategic Report`;
-  }
-
-  function getSectionPayloads({ omitEmpty = false } = {}) {
-    const payloads = [];
-
-    payloads.push({
-      key: 'executive',
-      title: 'Executive Summary',
-      html: state.content.executiveSummary.trim() ? `<p>${escapeHtml(state.content.executiveSummary).replace(/\n/g, '<br>')}</p>` : '',
-      text: state.content.executiveSummary.trim()
-    });
-
-    const tsrTableHtml = state.tsrData.rows.length ? buildSimpleTableHtml([
-      { key: 'location', label: 'Location' },
-      { key: 'type', label: 'Type' },
-      { key: 'speedRestriction', label: 'Speed Restriction' },
-      { key: 'startDate', label: 'Start Date' },
-      { key: 'duration', label: 'Duration' }
-    ], state.tsrData.rows) : '';
-    const tsrTextTable = state.tsrData.rows.length ? buildSimpleTableText([
-      { key: 'location', label: 'Location' },
-      { key: 'type', label: 'Type' },
-      { key: 'speedRestriction', label: 'Speed Restriction' },
-      { key: 'startDate', label: 'Start Date' },
-      { key: 'duration', label: 'Duration' }
-    ], state.tsrData.rows) : '';
-    payloads.push({
-      key: 'tsr',
-      title: 'TSR / ESR Analysis',
-      html: [
-        state.content.tsrSummary.trim() ? `<p><strong>Summary:</strong> ${escapeHtml(state.content.tsrSummary).replace(/\n/g, '<br>')}</p>` : '',
-        tsrTableHtml,
-        state.content.tsrCommentary.trim() ? `<p><strong>Commentary:</strong> ${escapeHtml(state.content.tsrCommentary).replace(/\n/g, '<br>')}</p>` : ''
-      ].filter(Boolean).join(''),
-      text: [
-        state.content.tsrSummary.trim() ? `Summary: ${state.content.tsrSummary.trim()}` : '',
-        tsrTextTable,
-        state.content.tsrCommentary.trim() ? `Commentary: ${state.content.tsrCommentary.trim()}` : ''
-      ].filter(Boolean).join('\n\n')
-    });
-
-    const assetsTableHtml = state.assetsData.rows.length ? buildSimpleTableHtml([
-      { key: 'assetType', label: 'Asset Type' },
-      { key: 'location', label: 'Location' },
-      { key: 'durationOut', label: 'Duration Out of Use' },
-      { key: 'impactLevel', label: 'Impact Level' }
-    ], state.assetsData.rows) : '';
-    const assetsTextTable = state.assetsData.rows.length ? buildSimpleTableText([
-      { key: 'assetType', label: 'Asset Type' },
-      { key: 'location', label: 'Location' },
-      { key: 'durationOut', label: 'Duration Out of Use' },
-      { key: 'impactLevel', label: 'Impact Level' }
-    ], state.assetsData.rows) : '';
-    payloads.push({
-      key: 'assets',
-      title: 'Out of Use Assets',
-      html: [
-        state.content.assetsSummary.trim() ? `<p><strong>Summary:</strong> ${escapeHtml(state.content.assetsSummary).replace(/\n/g, '<br>')}</p>` : '',
-        assetsTableHtml,
-        state.content.assetsCommentary.trim() ? `<p><strong>Commentary:</strong> ${escapeHtml(state.content.assetsCommentary).replace(/\n/g, '<br>')}</p>` : ''
-      ].filter(Boolean).join(''),
-      text: [
-        state.content.assetsSummary.trim() ? `Summary: ${state.content.assetsSummary.trim()}` : '',
-        assetsTextTable,
-        state.content.assetsCommentary.trim() ? `Commentary: ${state.content.assetsCommentary.trim()}` : ''
-      ].filter(Boolean).join('\n\n')
-    });
-
-    payloads.push({
-      key: 'engineering',
-      title: 'Future Disruptive Engineering Works',
-      html: [
-        state.content.engineeringLocation.trim() ? `<p><strong>Location / corridor:</strong> ${escapeHtml(state.content.engineeringLocation)}</p>` : '',
-        state.content.engineeringDates.trim() ? `<p><strong>Dates / period:</strong> ${escapeHtml(state.content.engineeringDates)}</p>` : '',
-        state.content.engineeringImpact.trim() ? `<p><strong>Operational impact:</strong> ${escapeHtml(state.content.engineeringImpact).replace(/\n/g, '<br>')}</p>` : '',
-        state.content.engineeringNarrative.trim() ? `<p><strong>Forward planning narrative:</strong> ${escapeHtml(state.content.engineeringNarrative).replace(/\n/g, '<br>')}</p>` : ''
-      ].filter(Boolean).join(''),
-      text: [
-        state.content.engineeringLocation.trim() ? `Location / corridor: ${state.content.engineeringLocation.trim()}` : '',
-        state.content.engineeringDates.trim() ? `Dates / period: ${state.content.engineeringDates.trim()}` : '',
-        state.content.engineeringImpact.trim() ? `Operational impact: ${state.content.engineeringImpact.trim()}` : '',
-        state.content.engineeringNarrative.trim() ? `Forward planning narrative: ${state.content.engineeringNarrative.trim()}` : ''
-      ].filter(Boolean).join('\n\n')
-    });
-
-    const bulletHtml = state.bullets.length ? `<ul>${state.bullets.map(b => `<li>${escapeHtml(b)}</li>`).join('')}</ul>` : '';
-    const bulletText = state.bullets.length ? state.bullets.map(b => `- ${b}`).join('\n') : '';
-    payloads.push({
-      key: 'events',
-      title: 'Disruptive Events',
-      html: [bulletHtml, state.content.eventsText.trim() ? `<p>${escapeHtml(state.content.eventsText).replace(/\n/g, '<br>')}</p>` : ''].filter(Boolean).join(''),
-      text: [bulletText, state.content.eventsText.trim()].filter(Boolean).join('\n\n')
-    });
-
-    return payloads.filter(section => {
-      if (!state.sections[section.key]) return false;
-      if (!omitEmpty) return true;
-      return section.text.trim().length > 0;
-    });
-  }
-
-  function buildReportHtml({ omitEmpty = false } = {}) {
-    const sections = getSectionPayloads({ omitEmpty });
-    return `
-      <div class="report-header">
-        <h1>${escapeHtml(state.header.title || defaultTitle())}</h1>
-        <div class="meta-grid">
-          <div class="meta-chip"><strong>Period:</strong> ${escapeHtml(state.header.period)}</div>
-          <div class="meta-chip"><strong>Date:</strong> ${escapeHtml(formatDateForDisplay(state.header.reportDate))}</div>
-          <div class="meta-chip"><strong>Author:</strong> ${escapeHtml(state.header.author || 'Not specified')}</div>
+    if(state.esrData.length){
+      sections.push(`
+        <div class="section">
+          <div class="section-title">Current ESRs (Sorted by Cumulative Delay)</div>
+          ${buildEsrTable()}
         </div>
-      </div>
-      ${sections.length ? sections.map(section => `
-        <section class="report-section">
-          <h3>${escapeHtml(section.title)}</h3>
-          ${section.html || '<p class="report-note">No content added yet.</p>'}
-        </section>
-      `).join('') : '<div class="empty-state">No report content has been added yet.</div>'}
-    `;
-  }
-
-  function buildReportText({ omitEmpty = false, teamsFormat = false } = {}) {
-    const title = state.header.title || defaultTitle();
-    const sections = getSectionPayloads({ omitEmpty });
-    const headerLines = [
-      title,
-      `Period: ${state.header.period}`,
-      `Date: ${formatDateForDisplay(state.header.reportDate)}`,
-      `Author: ${state.header.author || 'Not specified'}`
-    ];
-    const divider = teamsFormat ? '—'.repeat(32) : '='.repeat(48);
-
-    const body = sections.map(section => {
-      const heading = teamsFormat ? `**${section.title}**` : section.title.toUpperCase();
-      return `${heading}\n${section.text || 'No content added yet.'}`;
-    }).join(`\n\n${divider}\n\n`);
-
-    return `${headerLines.join('\n')}\n\n${divider}\n\n${body || 'No report content has been added yet.'}`;
-  }
-
-  function copySection(sectionKey) {
-    const target = getSectionPayloads({ omitEmpty: false }).find(s => s.key === sectionKey);
-    if (!target) return;
-    copyText(`${target.title}\n\n${target.text || 'No content added yet.'}`);
-  }
-
-  async function copyText(text) {
-    try {
-      await navigator.clipboard.writeText(text);
-      flashSaveStatus('Copied');
-    } catch (err) {
-      console.error('Copy failed', err);
-      alert('Copy failed in this browser context. Please try again or use the preview text manually.');
-    }
-  }
-
-  function downloadReport() {
-    const text = buildReportText({ omitEmpty: false });
-    const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${slugify(state.header.title || defaultTitle())}.txt`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
-  }
-
-  function addEventBullet() {
-    const value = el.eventBulletInput.value.trim();
-    if (!value) return;
-    state.bullets.push(value);
-    el.eventBulletInput.value = '';
-    renderBulletChips();
-    persistAndRender();
-  }
-
-  function renderBulletChips() {
-    el.eventChips.innerHTML = state.bullets.map((bullet, idx) => `
-      <span class="chip">${escapeHtml(bullet)} <button type="button" data-bullet-remove="${idx}" aria-label="Remove bullet">×</button></span>
-    `).join('');
-    el.eventChips.querySelectorAll('[data-bullet-remove]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const i = Number(btn.dataset.bulletRemove);
-        state.bullets.splice(i, 1);
-        renderBulletChips();
-        persistAndRender();
-      });
-    });
-  }
-
-  function clearEngineering() {
-    ['engineeringLocation','engineeringDates','engineeringImpact','engineeringNarrative'].forEach(k => {
-      state.content[k] = '';
-      el[k].value = '';
-    });
-    persistAndRender();
-  }
-
-  function clearEvents() {
-    state.content.eventsText = '';
-    state.bullets = [];
-    el.eventsText.value = '';
-    renderBulletChips();
-    persistAndRender();
-  }
-
-  function clearUploadData(type) {
-    const target = type === 'tsr' ? state.tsrData : state.assetsData;
-    target.rows = [];
-    target.rawRows = [];
-    target.headers = [];
-    target.workbookMeta = null;
-    Object.keys(target.mapping).forEach(k => target.mapping[k] = '');
-
-    if (type === 'tsr') {
-      el.tsrFile.value = '';
-      el.tsrSummary.value = '';
-      el.tsrCommentary.value = '';
-      state.content.tsrSummary = '';
-      state.content.tsrCommentary = '';
-      el.tsrTableWrap.innerHTML = '';
-      el.tsrMappingWrap.style.display = 'none';
-      setBanner('tsrSuccess', '', false);
-      setBanner('tsrError', '', false);
-    } else {
-      el.assetsFile.value = '';
-      el.assetsSummary.value = '';
-      el.assetsCommentary.value = '';
-      state.content.assetsSummary = '';
-      state.content.assetsCommentary = '';
-      el.assetsTableWrap.innerHTML = '';
-      el.assetsMappingWrap.style.display = 'none';
-      setBanner('assetsSuccess', '', false);
-      setBanner('assetsError', '', false);
+      `);
     }
 
-    persistAndRender();
-  }
-
-  function resetAll() {
-    if (!confirm('Reset the full report builder and clear saved local data?')) return;
-    localStorage.removeItem(STORAGE_KEY);
-    location.reload();
-  }
-
-  async function handleWorkbookUpload(evt, type) {
-    const file = evt.target.files && evt.target.files[0];
-    if (!file) return;
-    const bannerSuccess = type === 'tsr' ? 'tsrSuccess' : 'assetsSuccess';
-    const bannerError = type === 'tsr' ? 'tsrError' : 'assetsError';
-    setBanner(bannerSuccess, '', false);
-    setBanner(bannerError, '', false);
-
-    try {
-      const workbook = await parseXlsx(file);
-      if (!workbook.sheetNames.length) throw new Error('No worksheets were found in the uploaded workbook.');
-      const firstSheetName = workbook.sheetNames[0];
-      const rows = workbook.sheets[firstSheetName] || [];
-      if (!rows.length) throw new Error('The first worksheet is empty or could not be read.');
-
-      const dataRows = normaliseRows(rows);
-      const headers = inferHeaders(dataRows);
-      if (!headers.length) throw new Error('No header row could be identified. Ensure the first row contains column names.');
-
-      const dataset = type === 'tsr' ? state.tsrData : state.assetsData;
-      dataset.workbookMeta = { sheetName: firstSheetName, fileName: file.name };
-      dataset.headers = headers;
-      dataset.rawRows = dataRows.slice(1);
-      const mappings = type === 'tsr' ? suggestMappings(headers, 'tsr') : suggestMappings(headers, 'assets');
-      dataset.mapping = mappings;
-      dataset.rows = mapRowsToStandard(dataset.rawRows, mappings, type);
-
-      if (type === 'tsr') {
-        state.content.tsrSummary = generateTsrSummary(dataset.rows);
-        el.tsrSummary.value = state.content.tsrSummary;
-      } else {
-        state.content.assetsSummary = generateAssetsSummary(dataset.rows);
-        el.assetsSummary.value = state.content.assetsSummary;
-      }
-
-      renderEditableTable(type);
-      showMappingControls(type, false);
-      setBanner(bannerSuccess, `Loaded ${dataset.rows.length} rows from ${file.name} (${firstSheetName}).`, true, false);
-      persistAndRender();
-    } catch (err) {
-      console.error(err);
-      setBanner(bannerError, `Upload failed: ${err.message}`, true, true);
-    }
-  }
-
-  function setBanner(id, message, show, isError) {
-    const node = el[id];
-    node.textContent = message;
-    node.classList.toggle('show', show);
-    node.classList.toggle('error-banner', !!isError);
-    node.classList.toggle('success-banner', !isError);
-  }
-
-  function normaliseRows(rows) {
-    return rows
-      .map(row => row.map(cell => typeof cell === 'string' ? cell.trim() : cell))
-      .filter(row => row.some(cell => String(cell ?? '').trim() !== ''));
-  }
-
-  function inferHeaders(rows) {
-    const first = rows[0] || [];
-    return first.map((cell, idx) => String(cell || `Column ${idx + 1}`).trim() || `Column ${idx + 1}`);
-  }
-
-  function suggestMappings(headers, type) {
-    const targetFields = type === 'tsr'
-      ? {
-          location: ['location','site','section','corridor','area','line'],
-          type: ['type','restriction type','tsr','esr'],
-          speedRestriction: ['speed restriction','speed','mph','restriction'],
-          startDate: ['start date','start','from date','commence'],
-          duration: ['duration','days','end date','expiry','finish']
-        }
-      : {
-          assetType: ['asset type','asset','equipment','system','component'],
-          location: ['location','site','area','station','section'],
-          durationOut: ['duration out of use','duration','out of use','downtime','since'],
-          impactLevel: ['impact level','impact','severity','criticality','risk']
-        };
-
-    const mapping = {};
-    Object.entries(targetFields).forEach(([field, keywords]) => {
-      const match = headers.find(header => keywords.some(keyword => normaliseHeader(header).includes(keyword)));
-      mapping[field] = match || headers[0] || '';
-    });
-    return mapping;
-  }
-
-  function showMappingControls(type, open = true) {
-    const dataset = type === 'tsr' ? state.tsrData : state.assetsData;
-    const wrap = type === 'tsr' ? el.tsrMappingWrap : el.assetsMappingWrap;
-    const required = type === 'tsr'
-      ? [
-          ['location', 'Location'],
-          ['type', 'Type (TSR/ESR)'],
-          ['speedRestriction', 'Speed restriction'],
-          ['startDate', 'Start date'],
-          ['duration', 'Duration']
-        ]
-      : [
-          ['assetType', 'Asset type'],
-          ['location', 'Location'],
-          ['durationOut', 'Duration out of use'],
-          ['impactLevel', 'Impact level']
-        ];
-
-    if (!dataset.headers.length) {
-      wrap.style.display = 'none';
-      return;
+    if(state.tsrData.length){
+      sections.push(`
+        <div class="section">
+          <div class="section-title">Current TSRs</div>
+          ${buildTsrTable()}
+        </div>
+      `);
     }
 
-    wrap.style.display = open || dataset.headers.length ? 'grid' : 'none';
-    wrap.innerHTML = `
-      <div class="callout">Column mapping can be changed here if your uploaded source uses different headers. Changes immediately refresh the extracted table and auto summary.</div>
-      <div class="field-grid">
-        ${required.map(([key, label]) => `
-          <div class="field">
-            <label for="${type}-map-${key}">${label}</label>
-            <select id="${type}-map-${key}">
-              ${dataset.headers.map(header => `<option value="${escapeHtmlAttr(header)}" ${dataset.mapping[key] === header ? 'selected' : ''}>${escapeHtml(header)}</option>`).join('')}
-            </select>
-          </div>
-        `).join('')}
+    if(engineering.trim()){
+      sections.push(`
+        <div class="section">
+          <div class="section-title">Future Disruptive Engineering Works</div>
+          <div>${escapeHtml(engineering).replace(/\n/g,"<br>")}</div>
+        </div>
+      `);
+    }
+
+    if(events.trim()){
+      sections.push(`
+        <div class="section">
+          <div class="section-title">Disruptive Events</div>
+          <div>${escapeHtml(events).replace(/\n/g,"<br>")}</div>
+        </div>
+      `);
+    }
+
+    const preview = `
+      <div>
+        <h2>East Midlands Route – Period ${escapeHtml(period)} Strategic Report</h2>
+        <div class="meta"><b>Date:</b> ${escapeHtml(date)} &nbsp; | &nbsp; <b>Author:</b> ${escapeHtml(author || "Not provided")}</div>
+        ${sections.join("")}
       </div>
     `;
-
-    required.forEach(([key]) => {
-      const node = document.getElementById(`${type}-map-${key}`);
-      node.addEventListener('change', () => {
-        dataset.mapping[key] = node.value;
-        dataset.rows = mapRowsToStandard(dataset.rawRows, dataset.mapping, type);
-        if (type === 'tsr') {
-          state.content.tsrSummary = generateTsrSummary(dataset.rows);
-          el.tsrSummary.value = state.content.tsrSummary;
-        } else {
-          state.content.assetsSummary = generateAssetsSummary(dataset.rows);
-          el.assetsSummary.value = state.content.assetsSummary;
-        }
-        renderEditableTable(type);
-        persistAndRender();
-      });
-    });
+    $("preview").innerHTML = preview;
+    persist();
   }
 
-  function mapRowsToStandard(rows, mapping, type) {
-    const headers = type === 'tsr'
-      ? REQUIRED_TSR_FIELDS
-      : REQUIRED_ASSET_FIELDS;
-
-    const headerList = type === 'tsr' ? state.tsrData.headers : state.assetsData.headers;
-    const indexMap = {};
-    Object.entries(mapping).forEach(([key, header]) => {
-      indexMap[key] = headerList.indexOf(header);
-    });
-
-    return rows.map(row => {
-      const out = {};
-      headers.forEach(key => {
-        const idx = indexMap[key];
-        const raw = idx >= 0 ? row[idx] : '';
-        out[key] = formatCellValue(raw);
-      });
-      return out;
-    }).filter(row => Object.values(row).some(v => String(v).trim() !== ''));
-  }
-
-  function renderEditableTable(type) {
-    const dataset = type === 'tsr' ? state.tsrData : state.assetsData;
-    const wrap = type === 'tsr' ? el.tsrTableWrap : el.assetsTableWrap;
-    const columns = type === 'tsr'
-      ? [
-          ['location','Location'],
-          ['type','Type'],
-          ['speedRestriction','Speed Restriction'],
-          ['startDate','Start Date'],
-          ['duration','Duration']
-        ]
-      : [
-          ['assetType','Asset Type'],
-          ['location','Location'],
-          ['durationOut','Duration Out of Use'],
-          ['impactLevel','Impact Level']
-        ];
-
-    if (!dataset.rows.length) {
-      wrap.innerHTML = '<div class="empty-state">No extracted rows yet. Upload a workbook to populate this section.</div>';
-      return;
-    }
-
-    wrap.innerHTML = `
-      <div class="table-wrap">
-        <table class="table-editor">
-          <thead>
-            <tr>
-              ${columns.map(([,label]) => `<th>${escapeHtml(label)}</th>`).join('')}
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${dataset.rows.map((row, rIdx) => `
-              <tr>
-                ${columns.map(([key,label]) => `<td><input type="text" aria-label="${escapeHtml(label)} row ${rIdx + 1}" value="${escapeHtmlAttr(row[key] || '')}" data-edit-type="${type}" data-row="${rIdx}" data-key="${key}" /></td>`).join('')}
-                <td><button class="btn small ghost" type="button" data-delete-row="${type}:${rIdx}">Remove</button></td>
-              </tr>
-            `).join('')}
-          </tbody>
-        </table>
-      </div>
-      <div class="button-row" style="margin-top:10px;">
-        <button class="btn small ghost" id="add-${type}-row" type="button">Add Row</button>
-      </div>
-    `;
-
-    wrap.querySelectorAll('[data-edit-type]').forEach(input => {
-      input.addEventListener('input', () => {
-        const t = input.dataset.editType;
-        const rowIndex = Number(input.dataset.row);
-        const key = input.dataset.key;
-        const targetDataset = t === 'tsr' ? state.tsrData : state.assetsData;
-        targetDataset.rows[rowIndex][key] = input.value;
-        if (t === 'tsr') {
-          state.content.tsrSummary = generateTsrSummary(targetDataset.rows);
-          el.tsrSummary.value = state.content.tsrSummary;
-        } else {
-          state.content.assetsSummary = generateAssetsSummary(targetDataset.rows);
-          el.assetsSummary.value = state.content.assetsSummary;
-        }
-        persistAndRender();
-      });
-    });
-
-    wrap.querySelectorAll('[data-delete-row]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const [t, idx] = btn.dataset.deleteRow.split(':');
-        const targetDataset = t === 'tsr' ? state.tsrData : state.assetsData;
-        targetDataset.rows.splice(Number(idx), 1);
-        if (t === 'tsr') {
-          state.content.tsrSummary = generateTsrSummary(targetDataset.rows);
-          el.tsrSummary.value = state.content.tsrSummary;
-        } else {
-          state.content.assetsSummary = generateAssetsSummary(targetDataset.rows);
-          el.assetsSummary.value = state.content.assetsSummary;
-        }
-        renderEditableTable(t);
-        persistAndRender();
-      });
-    });
-
-    const addBtn = document.getElementById(`add-${type}-row`);
-    addBtn.addEventListener('click', () => {
-      dataset.rows.push(type === 'tsr'
-        ? { location: '', type: '', speedRestriction: '', startDate: '', duration: '' }
-        : { assetType: '', location: '', durationOut: '', impactLevel: '' });
-      renderEditableTable(type);
-      persistAndRender();
-    });
-  }
-
-  function generateTsrSummary(rows) {
-    if (!rows.length) return '';
-    const total = rows.length;
-    const types = countBy(rows.map(r => (r.type || 'Unspecified').toUpperCase()));
-    const keyLocations = uniqueTop(rows.map(r => r.location).filter(Boolean), 4);
-    const speedMentions = rows.map(r => r.speedRestriction).filter(Boolean);
-    const minSpeed = inferMinimumSpeed(speedMentions);
-    const typeText = Object.entries(types).map(([k,v]) => `${v} ${k}`).join(', ');
-    const locationText = keyLocations.length ? ` Key areas include ${keyLocations.join(', ')}.` : '';
-    const speedText = minSpeed ? ` Lowest stated restriction is ${minSpeed}.` : '';
-    return `${total} active restriction${total === 1 ? '' : 's'} identified (${typeText || 'type mix not specified'}).${locationText}${speedText} Review corridor-level resilience and whether any restrictions require heightened operational focus.`;
-  }
-
-  function generateAssetsSummary(rows) {
-    if (!rows.length) return '';
-    const total = rows.length;
-    const impactLevels = countBy(rows.map(r => (r.impactLevel || 'Unspecified').toUpperCase()));
-    const locations = uniqueTop(rows.map(r => r.location).filter(Boolean), 4);
-    const highImpact = Object.keys(impactLevels).find(k => /high|critical|severe/.test(k.toLowerCase()));
-    const impactText = Object.entries(impactLevels).map(([k,v]) => `${v} ${k}`).join(', ');
-    const locationText = locations.length ? ` Primary locations include ${locations.join(', ')}.` : '';
-    const riskText = highImpact ? ` High-impact assets are present and may warrant targeted control focus.` : '';
-    return `${total} out-of-use asset${total === 1 ? '' : 's'} recorded (${impactText || 'impact not categorised'}).${locationText}${riskText} Consider operational workarounds, maintenance dependency risk and any cumulative resilience effect.`;
-  }
-
-  function countBy(values) {
-    return values.reduce((acc, value) => {
-      const key = String(value || 'Unspecified').trim() || 'Unspecified';
-      acc[key] = (acc[key] || 0) + 1;
-      return acc;
-    }, {});
-  }
-
-  function uniqueTop(values, limit) {
-    return [...new Set(values.map(v => v.trim()).filter(Boolean))].slice(0, limit);
-  }
-
-  function inferMinimumSpeed(values) {
-    const matches = values
-      .map(v => String(v).match(/\d+/))
-      .filter(Boolean)
-      .map(m => Number(m[0]))
-      .filter(n => Number.isFinite(n));
-    if (!matches.length) return '';
-    return `${Math.min(...matches)} mph`;
-  }
-
-  function buildSimpleTableHtml(columns, rows) {
+  function buildEsrTable(){
+    const rows = state.esrData.map(r => `
+      <tr>
+        <td>${escapeHtml(r.location)}</td>
+        <td>${escapeHtml(r.ime)}</td>
+        <td>${escapeHtml(r.elr)}</td>
+        <td>${escapeHtml(r.days)}</td>
+        <td>${escapeHtml(r.delayWeek)}</td>
+        <td>${escapeHtml(r.delayTotal)}</td>
+        <td>${escapeHtml(r.reason)}</td>
+        <td>${escapeHtml(r.responsibility)}</td>
+        <td>${escapeHtml(r.comments)}</td>
+        <td>${escapeHtml(r.action)}</td>
+      </tr>
+    `).join("");
     return `
-      <div class="table-wrap" style="margin: 10px 0;">
-        <table>
-          <thead><tr>${columns.map(col => `<th>${escapeHtml(col.label)}</th>`).join('')}</tr></thead>
-          <tbody>
-            ${rows.map(row => `<tr>${columns.map(col => `<td>${escapeHtml(row[col.key] || '')}</td>`).join('')}</tr>`).join('')}
-          </tbody>
-        </table>
-      </div>
+      <table>
+        <tr>
+          <th>Location</th><th>IME</th><th>ELR</th><th>Days</th><th>Delay Last Week</th>
+          <th>Delay Cumulative</th><th>Reason</th><th>Responsibility</th><th>Comments</th><th>Short Term Action</th>
+        </tr>
+        ${rows}
+      </table>
     `;
   }
 
-  function buildSimpleTableText(columns, rows) {
-    const header = columns.map(c => c.label).join(' | ');
-    const body = rows.map(row => columns.map(c => row[c.key] || '').join(' | ')).join('\n');
-    return [header, body].filter(Boolean).join('\n');
+  function buildTsrTable(){
+    const rows = state.tsrData.map(r => `
+      <tr>
+        <td>${escapeHtml(r.location)}</td>
+        <td>${escapeHtml(r.cause)}</td>
+        <td>${escapeHtml(r.owner)}</td>
+      </tr>
+    `).join("");
+    return `
+      <table>
+        <tr><th>Location</th><th>Cause / Action</th><th>Action Owner</th></tr>
+        ${rows}
+      </table>
+    `;
   }
 
-  async function parseXlsx(file) {
+  async function copyText(text){
+    try{
+      await navigator.clipboard.writeText(text);
+      alert("Copied");
+    }catch(err){
+      console.error(err);
+      alert("Copy failed in this browser context.");
+    }
+  }
+
+  function previewToPlainText(){
+    const lines = [];
+    lines.push(`East Midlands Route – Period ${$("period").value} Strategic Report`);
+    lines.push(`Date: ${$("date").value}`);
+    lines.push(`Author: ${$("author").value || "Not provided"}`);
+    lines.push("");
+    lines.push("Executive Summary");
+    lines.push($("summary").value || "");
+    if(state.esrData.length){
+      lines.push("");
+      lines.push("Current ESRs (Sorted by Cumulative Delay)");
+      state.esrData.forEach(r => {
+        lines.push(`- ${r.location} | IME: ${r.ime} | ELR: ${r.elr} | Days: ${r.days} | Delay Last Week: ${r.delayWeek} | Delay Cumulative: ${r.delayTotal} | Reason: ${r.reason} | Responsibility: ${r.responsibility} | Comments: ${r.comments} | Short Term Action: ${r.action}`);
+      });
+    }
+    if(state.tsrData.length){
+      lines.push("");
+      lines.push("Current TSRs");
+      state.tsrData.forEach(r => {
+        lines.push(`- ${r.location} | Cause / Action: ${r.cause} | Action Owner: ${r.owner}`);
+      });
+    }
+    if($("engineering").value.trim()){
+      lines.push("");
+      lines.push("Future Disruptive Engineering Works");
+      lines.push($("engineering").value.trim());
+    }
+    if($("events").value.trim()){
+      lines.push("");
+      lines.push("Disruptive Events");
+      lines.push($("events").value.trim());
+    }
+    return lines.join("\n");
+  }
+
+  // -------- Minimal embedded XLSX parser --------
+
+  async function parseXlsx(file){
     const buffer = await file.arrayBuffer();
     const zipEntries = await unzipXlsx(buffer);
-    const workbookXml = zipEntries['xl/workbook.xml'];
-    if (!workbookXml) throw new Error('Could not find xl/workbook.xml in the workbook.');
 
-    const relsXml = zipEntries['xl/_rels/workbook.xml.rels'];
-    const sharedStringsXml = zipEntries['xl/sharedStrings.xml'] || '';
-    const stylesXml = zipEntries['xl/styles.xml'] || '';
+    const workbookXml = getTextEntry(zipEntries, "xl/workbook.xml");
+    const workbookRelsXml = getTextEntry(zipEntries, "xl/_rels/workbook.xml.rels");
+    if(!workbookXml || !workbookRelsXml){
+      throw new Error("Workbook structure could not be read.");
+    }
 
-    const sharedStrings = parseSharedStrings(sharedStringsXml);
-    const styles = parseStyles(stylesXml);
-    const sheetTargets = parseWorkbookSheetTargets(workbookXml, relsXml);
+    const sharedStringsXml = getTextEntry(zipEntries, "xl/sharedStrings.xml");
+    const stylesXml = getTextEntry(zipEntries, "xl/styles.xml");
+    const sharedStrings = sharedStringsXml ? parseSharedStrings(sharedStringsXml) : [];
+    const dateStyleSet = stylesXml ? parseDateStyleIndexes(stylesXml) : new Set();
+    const workbook = parseWorkbook(workbookXml, workbookRelsXml);
     const sheets = {};
 
-    for (const sheet of sheetTargets) {
-      const path = resolveSheetPath(sheet.target);
-      const xml = zipEntries[path];
-      if (!xml) continue;
-      sheets[sheet.name] = parseWorksheet(xml, sharedStrings, styles);
+    for(const sheet of workbook.sheets){
+      const path = resolveWorkbookTarget(sheet.target);
+      const xml = getTextEntry(zipEntries, path);
+      if(!xml) continue;
+      sheets[sheet.name] = parseSheet(xml, sharedStrings, dateStyleSet);
     }
-
-    return {
-      sheetNames: sheetTargets.map(s => s.name).filter(name => sheets[name]),
-      sheets
-    };
+    return { sheetNames: workbook.sheets.map(s => s.name), sheets };
   }
 
-  async function unzipXlsx(arrayBuffer) {
-    const bytes = new Uint8Array(arrayBuffer);
-    const entries = {};
-    const eocdOffset = findEndOfCentralDirectory(bytes);
-    if (eocdOffset < 0) throw new Error('The file is not a valid ZIP/XLSX container.');
+  function getTextEntry(map, name){
+    return map.get(name) || null;
+  }
 
-    const cdSize = readUInt32LE(bytes, eocdOffset + 12);
-    const cdOffset = readUInt32LE(bytes, eocdOffset + 16);
-    let ptr = cdOffset;
-    const decoder = new TextDecoder('utf-8');
+  function resolveWorkbookTarget(target){
+    if(target.startsWith("/")) return target.replace(/^\//, "");
+    return "xl/" + target.replace(/^(\.\/)?/, "");
+  }
 
-    while (ptr < cdOffset + cdSize) {
-      const sig = readUInt32LE(bytes, ptr);
-      if (sig !== 0x02014b50) break;
-      const compression = readUInt16LE(bytes, ptr + 10);
-      const compressedSize = readUInt32LE(bytes, ptr + 20);
-      const fileNameLength = readUInt16LE(bytes, ptr + 28);
-      const extraLength = readUInt16LE(bytes, ptr + 30);
-      const commentLength = readUInt16LE(bytes, ptr + 32);
-      const localHeaderOffset = readUInt32LE(bytes, ptr + 42);
-      const fileName = decoder.decode(bytes.slice(ptr + 46, ptr + 46 + fileNameLength));
+  async function unzipXlsx(arrayBuffer){
+    const view = new DataView(arrayBuffer);
+    const entries = parseCentralDirectory(view, arrayBuffer.byteLength);
+    const out = new Map();
 
-      const localSig = readUInt32LE(bytes, localHeaderOffset);
-      if (localSig !== 0x04034b50) throw new Error(`Invalid ZIP local header for ${fileName}.`);
-      const localNameLength = readUInt16LE(bytes, localHeaderOffset + 26);
-      const localExtraLength = readUInt16LE(bytes, localHeaderOffset + 28);
+    for(const entry of entries){
+      const raw = arrayBuffer.slice(entry.dataStart, entry.dataStart + entry.compressedSize);
+      let data;
+      if(entry.compressionMethod === 0){
+        data = new Uint8Array(raw);
+      }else if(entry.compressionMethod === 8){
+        data = await inflateRaw(raw);
+      }else{
+        continue;
+      }
+      if(entry.fileName.endsWith(".xml") || entry.fileName.endsWith(".rels")){
+        out.set(entry.fileName, new TextDecoder("utf-8").decode(data));
+      }
+    }
+    return out;
+  }
+
+  function parseCentralDirectory(view, byteLength){
+    const EOCD_SIG = 0x06054b50;
+    const CEN_SIG = 0x02014b50;
+    const LOC_SIG = 0x04034b50;
+
+    let eocdOffset = -1;
+    const min = Math.max(0, byteLength - 65557);
+    for(let i = byteLength - 22; i >= min; i--){
+      if(view.getUint32(i, true) === EOCD_SIG){
+        eocdOffset = i;
+        break;
+      }
+    }
+    if(eocdOffset < 0) throw new Error("End of central directory not found.");
+
+    const totalEntries = view.getUint16(eocdOffset + 10, true);
+    const centralDirOffset = view.getUint32(eocdOffset + 16, true);
+
+    const entries = [];
+    let ptr = centralDirOffset;
+
+    for(let i=0;i<totalEntries;i++){
+      if(view.getUint32(ptr, true) !== CEN_SIG) throw new Error("Invalid central directory entry.");
+      const compressionMethod = view.getUint16(ptr + 10, true);
+      const compressedSize = view.getUint32(ptr + 20, true);
+      const fileNameLength = view.getUint16(ptr + 28, true);
+      const extraLength = view.getUint16(ptr + 30, true);
+      const commentLength = view.getUint16(ptr + 32, true);
+      const localHeaderOffset = view.getUint32(ptr + 42, true);
+      const fileName = readString(view, ptr + 46, fileNameLength);
+
+      if(view.getUint32(localHeaderOffset, true) !== LOC_SIG) throw new Error("Invalid local file header.");
+      const localNameLength = view.getUint16(localHeaderOffset + 26, true);
+      const localExtraLength = view.getUint16(localHeaderOffset + 28, true);
       const dataStart = localHeaderOffset + 30 + localNameLength + localExtraLength;
-      const compressedData = bytes.slice(dataStart, dataStart + compressedSize);
-      const content = await inflateZipEntry(compressedData, compression);
-      entries[fileName] = decoder.decode(content);
 
+      entries.push({ fileName, compressionMethod, compressedSize, dataStart });
       ptr += 46 + fileNameLength + extraLength + commentLength;
     }
-
     return entries;
   }
 
-  function findEndOfCentralDirectory(bytes) {
-    for (let i = bytes.length - 22; i >= Math.max(0, bytes.length - 66000); i--) {
-      if (readUInt32LE(bytes, i) === 0x06054b50) return i;
-    }
-    return -1;
+  function readString(view, offset, length){
+    const bytes = new Uint8Array(view.buffer, offset, length);
+    return new TextDecoder("utf-8").decode(bytes);
   }
 
-  async function inflateZipEntry(data, compression) {
-    if (compression === 0) return data;
-    if (compression !== 8) throw new Error(`Unsupported ZIP compression method: ${compression}`);
-    if (typeof DecompressionStream === 'undefined') {
-      throw new Error('This browser does not support DecompressionStream, which is required for offline XLSX parsing in this build. Use a current Chromium, Edge, or modern browser.');
+  async function inflateRaw(rawBuffer){
+    if(typeof DecompressionStream === "undefined"){
+      throw new Error("This browser does not support DecompressionStream required for offline XLSX parsing.");
     }
-    const ds = new DecompressionStream('deflate-raw');
-    const stream = new Blob([data]).stream().pipeThrough(ds);
+    const ds = new DecompressionStream("deflate-raw");
+    const stream = new Blob([rawBuffer]).stream().pipeThrough(ds);
     const response = new Response(stream);
-    return new Uint8Array(await response.arrayBuffer());
+    const ab = await response.arrayBuffer();
+    return new Uint8Array(ab);
   }
 
-  function parseWorkbookSheetTargets(workbookXml, relsXml) {
-    const parser = new DOMParser();
-    const workbookDoc = parser.parseFromString(workbookXml, 'application/xml');
-    const relDoc = parser.parseFromString(relsXml, 'application/xml');
+  function parseXml(xmlText){
+    return new DOMParser().parseFromString(xmlText, "application/xml");
+  }
 
-    const relMap = {};
-    relDoc.querySelectorAll('Relationship').forEach(rel => {
-      relMap[rel.getAttribute('Id')] = rel.getAttribute('Target');
+  function parseWorkbook(workbookXml, relsXml){
+    const wbDoc = parseXml(workbookXml);
+    const relsDoc = parseXml(relsXml);
+    const relMap = new Map();
+    relsDoc.querySelectorAll("Relationship").forEach(rel => {
+      relMap.set(rel.getAttribute("Id"), rel.getAttribute("Target"));
     });
-
-    return [...workbookDoc.querySelectorAll('sheet')].map(sheet => ({
-      name: sheet.getAttribute('name') || 'Sheet',
-      target: relMap[sheet.getAttribute('r:id')] || ''
-    })).filter(s => s.target);
-  }
-
-  function resolveSheetPath(target) {
-    if (target.startsWith('/')) return target.replace(/^\//, '');
-    if (target.startsWith('xl/')) return target;
-    return `xl/${target.replace(/^\.\//, '')}`;
-  }
-
-  function parseSharedStrings(xml) {
-    if (!xml) return [];
-    const doc = new DOMParser().parseFromString(xml, 'application/xml');
-    return [...doc.querySelectorAll('si')].map(si => [...si.querySelectorAll('t')].map(t => t.textContent || '').join(''));
-  }
-
-  function parseStyles(xml) {
-    if (!xml) return { dateStyles: new Set() };
-    const doc = new DOMParser().parseFromString(xml, 'application/xml');
-    const numFmts = {};
-    doc.querySelectorAll('numFmt').forEach(nf => {
-      numFmts[nf.getAttribute('numFmtId')] = nf.getAttribute('formatCode') || '';
+    const sheets = [];
+    wbDoc.querySelectorAll("sheets > sheet").forEach(sheet => {
+      const name = sheet.getAttribute("name");
+      const relId = sheet.getAttribute("r:id");
+      sheets.push({ name, target: relMap.get(relId) });
     });
-    const builtInDateIds = new Set(['14','15','16','17','18','19','20','21','22','45','46','47']);
-    const dateStyles = new Set();
-    [...doc.querySelectorAll('cellXfs xf')].forEach((xf, idx) => {
-      const numFmtId = xf.getAttribute('numFmtId') || '';
-      const customFmt = numFmts[numFmtId] || '';
-      if (builtInDateIds.has(numFmtId) || /[dmyhs]/i.test(customFmt)) dateStyles.add(idx);
-    });
-    return { dateStyles };
+    return { sheets };
   }
 
-  function parseWorksheet(xml, sharedStrings, styles) {
-    const doc = new DOMParser().parseFromString(xml, 'application/xml');
-    const sheetData = doc.querySelector('sheetData');
-    if (!sheetData) return [];
+  function parseSharedStrings(xmlText){
+    const doc = parseXml(xmlText);
+    const values = [];
+    doc.querySelectorAll("si").forEach(si => {
+      let text = "";
+      si.querySelectorAll("t").forEach(t => { text += t.textContent || ""; });
+      values.push(text);
+    });
+    return values;
+  }
+
+  function parseDateStyleIndexes(xmlText){
+    const doc = parseXml(xmlText);
+    const customNumFmtDateIds = new Set();
+    doc.querySelectorAll("numFmts numFmt").forEach(nf => {
+      const id = Number(nf.getAttribute("numFmtId"));
+      const code = (nf.getAttribute("formatCode") || "").toLowerCase();
+      if(/[dmyhs]/.test(code)) customNumFmtDateIds.add(id);
+    });
+    const builtInDateIds = new Set([14,15,16,17,18,19,20,21,22,45,46,47]);
+    const styleIndexes = new Set();
+    doc.querySelectorAll("cellXfs xf").forEach((xf, idx) => {
+      const numFmtId = Number(xf.getAttribute("numFmtId"));
+      if(customNumFmtDateIds.has(numFmtId) || builtInDateIds.has(numFmtId)) styleIndexes.add(idx);
+    });
+    return styleIndexes;
+  }
+
+  function excelSerialDateToIso(serial){
+    const days = Math.floor(serial);
+    const frac = serial - days;
+    const epoch = Date.UTC(1899, 11, 30);
+    const millis = days * 86400000 + Math.round(frac * 86400000);
+    const d = new Date(epoch + millis);
+    return d.toISOString().slice(0,10);
+  }
+
+  function parseSheet(xmlText, sharedStrings, dateStyleSet){
+    const doc = parseXml(xmlText);
     const rows = [];
+    const dimension = doc.querySelector("dimension");
+    const maxColGuess = dimension ? parseRangeMaxCol(dimension.getAttribute("ref") || "") : null;
 
-    [...sheetData.querySelectorAll('row')].forEach(rowNode => {
+    doc.querySelectorAll("sheetData > row").forEach(rowNode => {
       const row = [];
-      [...rowNode.querySelectorAll('c')].forEach(cell => {
-        const ref = cell.getAttribute('r') || '';
-        const colIndex = columnRefToIndex(ref.replace(/\d+/g, ''));
-        const type = cell.getAttribute('t') || '';
-        const styleIndex = Number(cell.getAttribute('s'));
-        let value = '';
+      rowNode.querySelectorAll("c").forEach(cell => {
+        const ref = cell.getAttribute("r") || "";
+        const colIndex = colLettersToIndex(ref.replace(/[0-9]/g, "")) || 0;
+        const type = cell.getAttribute("t") || "";
+        const styleIndex = Number(cell.getAttribute("s"));
+        let value = "";
+        const vNode = cell.querySelector("v");
+        const isNode = cell.querySelector("is");
 
-        if (type === 'inlineStr') {
-          value = [...cell.querySelectorAll('is t')].map(n => n.textContent || '').join('');
-        } else {
-          const v = cell.querySelector('v');
-          const raw = v ? v.textContent || '' : '';
-          value = decodeCellValue(raw, type, styleIndex, sharedStrings, styles);
+        if(type === "s" && vNode){
+          value = sharedStrings[Number(vNode.textContent)] ?? "";
+        }else if(type === "inlineStr" && isNode){
+          value = Array.from(isNode.querySelectorAll("t")).map(t => t.textContent || "").join("");
+        }else if(type === "b" && vNode){
+          value = vNode.textContent === "1" ? "TRUE" : "FALSE";
+        }else if(vNode){
+          const raw = vNode.textContent || "";
+          if(dateStyleSet.has(styleIndex) && raw !== "" && !isNaN(Number(raw))){
+            value = excelSerialDateToIso(Number(raw));
+          }else{
+            value = raw;
+          }
         }
+
         row[colIndex] = value;
       });
-      rows.push(row.map(v => v == null ? '' : v));
-    });
-
-    return rows;
-  }
-
-  function decodeCellValue(raw, type, styleIndex, sharedStrings, styles) {
-    if (type === 's') return sharedStrings[Number(raw)] || '';
-    if (type === 'b') return raw === '1' ? 'TRUE' : 'FALSE';
-    if (type === 'str') return raw;
-    if (type === 'e') return raw;
-    if (raw === '') return '';
-
-    const num = Number(raw);
-    if (Number.isFinite(num) && styles.dateStyles.has(styleIndex)) {
-      return excelDateToIso(raw);
-    }
-    return raw;
-  }
-
-  function excelDateToIso(serial) {
-    const num = Number(serial);
-    if (!Number.isFinite(num)) return String(serial);
-    const utcDays = Math.floor(num - 25569);
-    const utcValue = utcDays * 86400;
-    const dateInfo = new Date(utcValue * 1000);
-    if (Number.isNaN(dateInfo.getTime())) return String(serial);
-    return dateInfo.toISOString().slice(0, 10);
-  }
-
-  function columnRefToIndex(ref) {
-    let n = 0;
-    const letters = (ref || '').toUpperCase();
-    for (let i = 0; i < letters.length; i++) n = n * 26 + (letters.charCodeAt(i) - 64);
-    return Math.max(0, n - 1);
-  }
-
-  function readUInt16LE(bytes, offset) {
-    return bytes[offset] | (bytes[offset + 1] << 8);
-  }
-
-  function readUInt32LE(bytes, offset) {
-    return ((bytes[offset]) | (bytes[offset + 1] << 8) | (bytes[offset + 2] << 16) | (bytes[offset + 3] << 24)) >>> 0;
-  }
-
-  function formatCellValue(value) {
-    if (value == null) return '';
-    if (typeof value === 'string') return value.trim();
-    return String(value).trim();
-  }
-
-  function formatDateForDisplay(isoDate) {
-    if (!isoDate) return '';
-    const [y, m, d] = isoDate.split('-').map(Number);
-    if (!y || !m || !d) return isoDate;
-    return new Date(Date.UTC(y, m - 1, d)).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'UTC' });
-  }
-
-  function todayIso() {
-    const now = new Date();
-    const y = now.getFullYear();
-    const m = String(now.getMonth() + 1).padStart(2, '0');
-    const d = String(now.getDate()).padStart(2, '0');
-    return `${y}-${m}-${d}`;
-  }
-
-  function normaliseHeader(value) {
-    return String(value || '').trim().toLowerCase().replace(/[_-]+/g, ' ');
-  }
-
-  function deepAssign(target, source) {
-    Object.keys(source || {}).forEach(key => {
-      if (source[key] && typeof source[key] === 'object' && !Array.isArray(source[key])) {
-        if (!target[key] || typeof target[key] !== 'object') target[key] = {};
-        deepAssign(target[key], source[key]);
-      } else {
-        target[key] = source[key];
+      if(maxColGuess != null){
+        for(let i=0;i<=maxColGuess;i++) if(row[i] == null) row[i] = "";
       }
+      rows.push(row);
+    });
+
+    const headerRowIndex = rows.findIndex(r => r.some(v => String(v).trim() !== ""));
+    if(headerRowIndex < 0) return [];
+    const headers = rows[headerRowIndex].map((h, idx) => String(h || `Column ${idx+1}`).trim() || `Column ${idx+1}`);
+    const objects = [];
+    for(let i=headerRowIndex+1;i<rows.length;i++){
+      const r = rows[i];
+      if(!r || !r.some(v => String(v).trim() !== "")) continue;
+      const obj = {};
+      headers.forEach((h, idx) => { obj[h] = r[idx] ?? ""; });
+      objects.push(obj);
+    }
+    return objects;
+  }
+
+  function parseRangeMaxCol(ref){
+    const parts = ref.split(":");
+    const end = parts[1] || parts[0] || "";
+    const letters = end.replace(/[0-9]/g, "");
+    return colLettersToIndex(letters);
+  }
+
+  function colLettersToIndex(letters){
+    if(!letters) return 0;
+    let n = 0;
+    for(const ch of letters.toUpperCase()){
+      n = n * 26 + (ch.charCodeAt(0) - 64);
+    }
+    return n - 1;
+  }
+
+  function findHeader(headers, target){
+    const targetNorm = normaliseHeader(target);
+    const exact = headers.find(h => normaliseHeader(h) === targetNorm);
+    if(exact) return exact;
+    const loose = headers.find(h => normaliseHeader(h).includes(targetNorm) || targetNorm.includes(normaliseHeader(h)));
+    return loose || null;
+  }
+
+  function normaliseHeader(v){
+    return String(v || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+  }
+
+  function mapCurrentEsrs(rows){
+    if(!rows.length) return [];
+    const headers = Object.keys(rows[0]);
+    const h = {
+      location: findHeader(headers, "Location"),
+      ime: findHeader(headers, "IME"),
+      elr: findHeader(headers, "ELR"),
+      days: findHeader(headers, "Number of Days"),
+      delayWeek: findHeader(headers, "Delay Mins Last Week"),
+      delayTotal: findHeader(headers, "Delay Mins Cumulative"),
+      reason: findHeader(headers, "Reason"),
+      responsibility: findHeader(headers, "Responsibility"),
+      comments: findHeader(headers, "Comments"),
+      action: findHeader(headers, "Short Term Action")
+    };
+    return rows.map(r => ({
+      location: h.location ? r[h.location] : "",
+      ime: h.ime ? r[h.ime] : "",
+      elr: h.elr ? r[h.elr] : "",
+      days: h.days ? r[h.days] : "",
+      delayWeek: h.delayWeek ? r[h.delayWeek] : "",
+      delayTotal: h.delayTotal ? r[h.delayTotal] : "",
+      reason: h.reason ? r[h.reason] : "",
+      responsibility: h.responsibility ? r[h.responsibility] : "",
+      comments: h.comments ? r[h.comments] : "",
+      action: h.action ? r[h.action] : ""
+    })).sort((a,b) => {
+      const av = normaliseNumber(a.delayTotal); const bv = normaliseNumber(b.delayTotal);
+      return (Number.isFinite(bv) ? bv : -Infinity) - (Number.isFinite(av) ? av : -Infinity);
     });
   }
 
-  function slugify(text) {
-    return String(text || 'report')
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-+|-+$/g, '') || 'report';
+  function mapCurrentTsrs(rows){
+    if(!rows.length) return [];
+    const headers = Object.keys(rows[0]);
+    const h = {
+      location: findHeader(headers, "Location"),
+      cause: findHeader(headers, "Cause/Action"),
+      owner: findHeader(headers, "Action Owner")
+    };
+    return rows.map(r => ({
+      location: h.location ? r[h.location] : "",
+      cause: h.cause ? r[h.cause] : "",
+      owner: h.owner ? r[h.owner] : ""
+    }));
   }
 
-  function escapeHtml(value) {
-    return String(value ?? '')
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#39;');
+  async function handleFileChange(ev){
+    const file = ev.target.files && ev.target.files[0];
+    if(!file) return;
+    setStatus("Parsing workbook…");
+    try{
+      const workbook = await parseXlsx(file);
+      const esrRows = workbook.sheets["Current ESRs"] || [];
+      const tsrRows = workbook.sheets["Current TSRs"] || [];
+
+      if(!workbook.sheetNames.includes("Current ESRs") && !workbook.sheetNames.includes("Current TSRs")){
+        throw new Error("Could not find sheets named exactly 'Current ESRs' or 'Current TSRs'.");
+      }
+
+      state.esrData = mapCurrentEsrs(esrRows);
+      state.tsrData = mapCurrentTsrs(tsrRows);
+      state.workbookMeta = { loaded:true, filename:file.name };
+      state.summaryBase = computeSummaryBase($("summary").value);
+      updateSummaryWithInsight();
+      setStatus(`Workbook parsed successfully: ${file.name}`, "ok");
+      render();
+    }catch(err){
+      console.error(err);
+      setStatus(`Upload failed: ${err.message}`, "warn");
+      alert(`Upload failed: ${err.message}`);
+    }
   }
 
-  function escapeHtmlAttr(value) {
-    return escapeHtml(value).replace(/`/g, '&#96;');
-  }
+  ["period","date","author","engineering","events"].forEach(id => {
+    $(id).addEventListener("input", render);
+    $(id).addEventListener("change", render);
+  });
+
+  $("summary").addEventListener("input", () => {
+    state.summaryBase = computeSummaryBase($("summary").value);
+    render();
+  });
+
+  $("fileInput").addEventListener("change", handleFileChange);
+  $("copyFullBtn").addEventListener("click", () => copyText(previewToPlainText()));
+  $("copyPreviewBtn").addEventListener("click", () => copyText($("preview").innerText));
+
+  hydrate();
 })();
 </script>
 </body>
