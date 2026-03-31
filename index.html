@@ -3,461 +3,1215 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Periodic Route Strategic Report Builder</title>
-<meta name="viewport" content="width=device-width,initial-scale=1" />
 <style>
-  :root{
-    --bg:#f3f5f7; --panel:#ffffff; --ink:#1f2937; --muted:#6b7280; --line:#d7dde5;
-    --brand:#0b5cab; --brand-dark:#084684; --shadow:0 8px 24px rgba(16,24,40,.08);
-    --radius:14px;
-  }
-  *{box-sizing:border-box}
-  body{margin:0;font-family:Segoe UI, Arial, sans-serif;background:var(--bg);color:var(--ink)}
-  .container{display:flex;min-height:100vh}
-  .left,.right{width:50%;padding:20px}
-  .left{overflow:auto}
-  .right{overflow:auto;position:sticky;top:0;height:100vh;background:#fcfcfd;border-left:1px solid var(--line)}
-  .card{
-    background:var(--panel); border:1px solid #e8edf3; border-radius:var(--radius);
-    padding:16px; margin-bottom:16px; box-shadow:var(--shadow)
-  }
-  h1,h2,h3{margin:0 0 12px}
-  h1{font-size:22px}
-  h2{font-size:18px}
-  h3{font-size:16px}
-  label{display:block;font-size:13px;font-weight:600;margin:12px 0 6px}
-  input, select, textarea{
-    width:100%; padding:10px 12px; border:1px solid #cfd8e3; border-radius:10px;
-    background:#fff; color:var(--ink); font:inherit;
-  }
-  textarea{resize:vertical; min-height:100px}
-  .helper{font-size:12px;color:var(--muted);margin-top:4px}
-  .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-  .btnbar{display:flex;gap:10px;flex-wrap:wrap}
-  button{
-    border:0; border-radius:10px; padding:11px 14px; color:#fff; font-weight:600; cursor:pointer;
-    background:linear-gradient(180deg,var(--brand),var(--brand-dark));
-    box-shadow:inset 0 1px 0 rgba(255,255,255,.25), 0 6px 16px rgba(11,92,171,.22);
-    transition:transform .15s ease, box-shadow .15s ease, filter .15s ease;
-  }
-  button:hover{transform:translateY(-1px);filter:brightness(1.02)}
-  button.secondary{background:linear-gradient(180deg,#6b7280,#4b5563);box-shadow:inset 0 1px 0 rgba(255,255,255,.2),0 6px 16px rgba(75,85,99,.18)}
-  .status{font-size:13px;color:var(--muted);margin-top:8px}
-  table{width:100%;border-collapse:collapse;font-size:13px;margin-top:10px}
-  th,td{border:1px solid #dde3ea;padding:7px 8px;text-align:left;vertical-align:top}
-  th{background:#f7f9fb}
-  .preview-report h2{font-size:22px;margin-bottom:6px}
-  .meta{font-size:13px;color:#4b5563;margin-bottom:18px}
-  .section{margin-bottom:18px}
-  .section-title{font-size:16px;font-weight:700;border-bottom:2px solid #e8edf3;padding-bottom:6px;margin-bottom:10px}
-  .warn{color:#9a3412}
-  .ok{color:#166534}
-  @media (max-width: 980px){
-    .container{display:block}
-    .left,.right{width:100%;height:auto;position:static}
-    .row{grid-template-columns:1fr}
-  }
+:root{
+  --bg:#eef3f8;
+  --panel:#ffffff;
+  --panel-soft:#f8fbff;
+  --line:#d9e2ee;
+  --text:#17324d;
+  --muted:#60758b;
+  --brand:#0b5cab;
+  --brand-dark:#083d73;
+  --brand-soft:#eaf3ff;
+  --accent:#12a3a8;
+  --accent-soft:#e9fbfb;
+  --green:#1f7a45;
+  --green-soft:#e8f7ee;
+  --amber:#b97208;
+  --amber-soft:#fff4de;
+  --red:#a32929;
+  --red-soft:#fdecec;
+  --shadow:0 10px 28px rgba(15, 38, 74, .10);
+  --shadow-soft:0 6px 18px rgba(15, 38, 74, .08);
+  --radius:18px;
+  --radius-sm:12px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:linear-gradient(180deg,#edf3f9 0%, #f6f9fc 100%);color:var(--text);font-family:Segoe UI,Arial,sans-serif}
+body{min-height:100vh}
+.container{display:grid;grid-template-columns:1fr 1fr;min-height:100vh}
+.builder{padding:20px 18px 24px 24px;overflow:auto}
+.preview-wrap{padding:20px 24px 24px 18px;background:linear-gradient(180deg,#f7fbff 0%, #eef5fc 100%);border-left:1px solid var(--line);position:sticky;top:0;height:100vh;overflow:auto}
+.hero{
+  background:linear-gradient(135deg, rgba(11,92,171,1) 0%, rgba(10,69,128,1) 60%, rgba(18,163,168,1) 100%);
+  color:#fff;border-radius:24px;padding:20px 22px;margin-bottom:16px;box-shadow:var(--shadow);
+}
+.hero-top{display:flex;justify-content:space-between;gap:16px;align-items:flex-start}
+.hero h1{margin:0 0 6px;font-size:26px;line-height:1.05}
+.hero p{margin:0;color:rgba(255,255,255,.92);max-width:760px}
+.hero-badges{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.badge{
+  display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.15);
+  border:1px solid rgba(255,255,255,.18);padding:8px 12px;border-radius:999px;font-size:12px;font-weight:700;
+  backdrop-filter: blur(4px);
+}
+.panel{
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow-soft);
+  margin-bottom:16px;
+  overflow:hidden;
+}
+.panel-header{
+  display:flex;justify-content:space-between;gap:12px;align-items:center;
+  padding:14px 16px;background:linear-gradient(180deg,#ffffff,#f8fbff);border-bottom:1px solid var(--line);
+}
+.panel-title{display:flex;align-items:center;gap:10px;font-size:16px;font-weight:800}
+.panel-sub{font-size:12px;color:var(--muted);margin-top:2px}
+.panel-body{padding:16px}
+.icon{
+  width:34px;height:34px;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;
+  background:var(--brand-soft);color:var(--brand);font-weight:900;font-size:16px;
+}
+.toggle{
+  display:inline-flex;align-items:center;gap:10px;font-size:13px;font-weight:700;color:var(--text);
+}
+.toggle input{accent-color:var(--brand);width:16px;height:16px;margin:0}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+label{display:block;font-size:13px;font-weight:700;margin:0 0 6px}
+input[type="text"],input[type="date"],select,textarea,input[type="file"]{
+  width:100%;border:1px solid #ccd8e5;background:#fff;border-radius:12px;padding:11px 12px;font:inherit;color:var(--text)
+}
+textarea{min-height:110px;resize:vertical}
+.helper{font-size:12px;color:var(--muted);margin-top:6px}
+.mini-helper{font-size:11px;color:var(--muted)}
+.stack > * + *{margin-top:12px}
+.btnbar{display:flex;gap:10px;flex-wrap:wrap}
+button{
+  appearance:none;border:0;border-radius:12px;padding:11px 15px;font:inherit;font-weight:800;cursor:pointer;
+  color:#fff;background:linear-gradient(180deg,var(--brand),var(--brand-dark));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.22), 0 8px 20px rgba(11,92,171,.22);
+  transition:transform .15s ease, box-shadow .15s ease, filter .15s ease;
+}
+button:hover{transform:translateY(-1px);filter:brightness(1.02)}
+button.secondary{
+  color:var(--text);background:linear-gradient(180deg,#ffffff,#eef4fb);border:1px solid var(--line);
+  box-shadow:0 8px 20px rgba(15,38,74,.08)
+}
+button.good{background:linear-gradient(180deg,#1f7a45,#155b33)}
+button.warn{background:linear-gradient(180deg,#d27f0b,#a76407)}
+.notice{
+  padding:12px 14px;border-radius:12px;font-size:13px;border:1px solid var(--line);background:#f8fbff
+}
+.notice.good{background:var(--green-soft);border-color:#cfe8d7;color:var(--green)}
+.notice.warn{background:var(--amber-soft);border-color:#efd79c;color:#6a4a08}
+.notice.bad{background:var(--red-soft);border-color:#f1c5c5;color:var(--red)}
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.metric{
+  background:linear-gradient(180deg,#ffffff,#f8fbff);border:1px solid var(--line);border-radius:16px;padding:14px;box-shadow:var(--shadow-soft)
+}
+.metric-label{font-size:12px;color:var(--muted);font-weight:700}
+.metric-value{font-size:24px;font-weight:900;line-height:1.1;margin-top:4px}
+.metric-sub{font-size:11px;color:var(--muted);margin-top:4px}
+.preview-shell{
+  background:#fff;border:1px solid #d6e1ed;border-radius:24px;box-shadow:var(--shadow);overflow:hidden
+}
+.preview-banner{
+  padding:18px 22px;background:linear-gradient(135deg,#0b5cab 0%, #0a467f 60%, #0f97a6 100%);
+  color:#fff
+}
+.preview-banner h2{margin:0 0 4px;font-size:26px}
+.preview-banner p{margin:0;color:rgba(255,255,255,.92)}
+.preview-meta{
+  display:flex;gap:20px;flex-wrap:wrap;margin-top:12px;font-size:13px;color:rgba(255,255,255,.95);font-weight:700
+}
+.preview-content{padding:22px}
+.report-section{margin-bottom:20px}
+.report-section:last-child{margin-bottom:0}
+.report-title{
+  margin:0 0 10px;font-size:16px;font-weight:900;color:var(--brand);display:flex;align-items:center;gap:10px
+}
+.report-card{
+  background:linear-gradient(180deg,#ffffff,#fafcff);border:1px solid #e0e8f2;border-radius:16px;padding:14px 16px
+}
+.report-card p{margin:0;line-height:1.5}
+.table-wrap{overflow:auto;border:1px solid #e0e8f2;border-radius:14px;background:#fff}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{border-bottom:1px solid #e8eef5;padding:9px 10px;text-align:left;vertical-align:top}
+th{background:#eff5fc;color:var(--brand-dark);font-size:12px;text-transform:uppercase;letter-spacing:.03em}
+tr:nth-child(even) td{background:#fbfdff}
+.kpi-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px}
+.kpi{
+  border:1px solid #dfe8f3;background:linear-gradient(180deg,#ffffff,#f7fbff);border-radius:14px;padding:12px
+}
+.kpi .kpi-name{font-size:12px;color:var(--muted);font-weight:800}
+.kpi .kpi-value{font-size:22px;font-weight:900;margin-top:4px}
+.list-tight{margin:0;padding-left:18px}
+.list-tight li{margin:6px 0}
+.hr{height:1px;background:#e4ebf3;margin:16px 0}
+.hidden{display:none !important}
+.copy-chip{
+  display:inline-flex;align-items:center;gap:8px;border-radius:999px;padding:8px 10px;font-size:12px;font-weight:800;
+  background:#fff;border:1px solid #dce6f1;color:var(--brand-dark)
+}
+.section-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.small-btn{
+  border-radius:10px;padding:8px 10px;font-size:12px;font-weight:800
+}
+@media (max-width: 1180px){
+  .container{grid-template-columns:1fr}
+  .preview-wrap{position:static;height:auto;border-left:0;border-top:1px solid var(--line)}
+}
+@media (max-width: 780px){
+  .grid-2,.metrics,.kpi-strip{grid-template-columns:1fr}
+  .hero-top{display:block}
+}
+
+.rag-red{background:#fde8e8;font-weight:700}
+.rag-amber{background:#fff4de;font-weight:700}
+.rag-green{background:#e8f7ee;font-weight:700}
 </style>
+
+<style>
+/* Stronger visual clarity for email copy */
+.report-card{
+  border:2px solid #b7c4d6;
+  border-radius:10px;
+  padding:14px;
+  margin-bottom:14px;
+  background:linear-gradient(180deg,#ffffff 0%,#f6f9ff 100%);
+  box-shadow:0 1px 0 rgba(0,0,0,0.04);
+}
+
+.report-card p strong{
+  display:inline-block;
+  background:#2f3e57;
+  color:white;
+  padding:4px 10px;
+  border-radius:6px;
+  font-weight:600;
+  letter-spacing:.2px;
+}
+
+.table-wrap table{
+  border-collapse:collapse;
+  width:100%;
+  border:2px solid #9fb0c7;
+  font-size:13px;
+}
+
+.table-wrap th{
+  background:linear-gradient(180deg,#3c4f6e 0%,#2c3e59 100%);
+  color:white;
+  border:1px solid #7f95b3;
+  padding:7px 9px;
+  text-align:left;
+  font-weight:600;
+}
+
+.table-wrap td{
+  border:1px solid #c7d3e3;
+  padding:6px 9px;
+  background:#ffffff;
+}
+
+.table-wrap tr:nth-child(even) td{
+  background:#f3f6fb;
+}
+
+/* section titles */
+.section-title{
+  background:linear-gradient(180deg,#2f3e57 0%,#233349 100%);
+  color:white;
+  padding:8px 12px;
+  border-radius:6px;
+  font-weight:600;
+  margin-bottom:8px;
+  letter-spacing:.3px;
+}
+</style>
+
 </head>
 <body>
 <div class="container">
-  <div class="left">
-    <div class="card">
-      <h1>Periodic Route Strategic Report Builder</h1>
-      <div class="helper">Single-file offline builder with embedded spreadsheet parsing for Current ESRs and Current TSRs.</div>
-    </div>
-
-    <div class="card">
-      <h2>Report Config</h2>
-      <div class="row">
+  <section class="builder">
+    <div class="hero">
+      <div class="hero-top">
         <div>
-          <label for="period">Period</label>
-          <select id="period"></select>
-        </div>
-        <div>
-          <label for="date">Date</label>
-          <input id="date" type="date" />
+          <h1>Periodic Route Strategic Report Builder</h1>
+          <p>Executive-ready route reporting with embedded spreadsheet parsing, live preview, rich copy and auto-generated insights for Current ESRs, Current TSRs and Out of Use Assets.</p>
+          <div class="hero-badges">
+            <span class="badge">Single-file HTML</span>
+            <span class="badge">Offline-capable</span>
+            <span class="badge">GitHub Pages ready</span>
+            <span class="badge">Rich HTML copy</span>
+          </div>
         </div>
       </div>
-      <label for="author">Author</label>
-      <input id="author" type="text" placeholder="SNDM name" />
     </div>
 
-    <div class="card">
-      <h2>Executive Summary</h2>
-      <div class="helper">Summarise performance, key risks, and overall route position. The highest delay ESR insight will be added automatically after upload.</div>
-      <textarea id="summary" placeholder="Summarise performance, key risks, and overall route position"></textarea>
-    </div>
-
-    <div class="card">
-      <h2>Current TSRs / ESRs Upload</h2>
-      <div class="helper">Upload one .xlsx file containing sheets named exactly <b>Current ESRs</b> and <b>Current TSRs</b>.</div>
-      <input id="fileInput" type="file" accept=".xlsx" />
-      <div id="uploadStatus" class="status">No file loaded.</div>
-    </div>
-
-    <div class="card">
-      <h2>Future Disruptive Engineering Works</h2>
-      <textarea id="engineering" placeholder="Location, dates, impact, mitigations and route planning narrative"></textarea>
-    </div>
-
-    <div class="card">
-      <h2>Disruptive Events</h2>
-      <textarea id="events" placeholder="Sporting events, concerts, major possessions, external risks and expected operational effect"></textarea>
-    </div>
-
-    <div class="card">
-      <div class="btnbar">
-        <button id="copyFullBtn" type="button">Copy Full Report</button>
-        <button id="copyPreviewBtn" class="secondary" type="button">Copy Preview Text</button>
+    <div class="metrics">
+      <div class="metric">
+        <div class="metric-label">Active ESRs</div>
+        <div class="metric-value" id="metricEsr">0</div>
+        <div class="metric-sub">Current ESR sheet</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">Active TSRs</div>
+        <div class="metric-value" id="metricTsr">0</div>
+        <div class="metric-sub">Current TSR sheet</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">Out of Use Assets</div>
+        <div class="metric-value" id="metricAssets">0</div>
+        <div class="metric-sub">Parsed asset entries</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">Cumulative ESR Delay</div>
+        <div class="metric-value" id="metricDelay">0</div>
+        <div class="metric-sub">Minutes from ESR sheet</div>
       </div>
     </div>
-  </div>
 
-  <div class="right">
-    <div class="card preview-report">
-      <h2>Live Preview</h2>
-      <div id="preview"></div>
+    <div class="panel">
+      <div class="panel-header">
+        <div>
+          <div class="panel-title"><span class="icon">■</span> Header / Report Config</div>
+          <div class="panel-sub">Core report details shown in the final output</div>
+        </div>
+      </div>
+      <div class="panel-body">
+        <div class="grid-2">
+          <div>
+            <label for="period">Period</label>
+            <select id="period"></select>
+          </div>
+          <div>
+            <label for="reportDate">Date</label>
+            <input id="reportDate" type="date">
+          </div>
+        </div>
+        <div class="grid-2" style="margin-top:12px">
+          <div>
+            <label for="author">Author</label>
+            <input id="author" type="text" placeholder="Senior Network Delivery Manager">
+          </div>
+          <div>
+            <label for="titleOverride">Title override (optional)</label>
+            <input id="titleOverride" type="text" placeholder="Leave blank to use the automatic title">
+          </div>
+        </div>
+      </div>
     </div>
-  </div>
+
+    <div class="panel" data-section="exec">
+      <div class="panel-header">
+        <div>
+          <div class="panel-title"><span class="icon">✦</span> Executive Summary</div>
+          <div class="panel-sub">Strategic headline narrative for directors and senior stakeholders</div>
+        </div>
+        <label class="toggle"><input type="checkbox" id="toggleExec" checked> Show section</label>
+      </div>
+      <div class="panel-body stack">
+        <div>
+          <label for="summary">Summary</label>
+          <textarea id="summary" placeholder="Summarise performance, key risks, and overall route position. Highest delay ESR insight will be inserted automatically after upload."></textarea>
+          <div class="helper">Auto-generated insight text remains fully editable.</div>
+        </div>
+        <div class="notice" id="summaryNotice">No auto insights generated yet.</div>
+      </div>
+    </div>
+
+    <div class="panel" data-section="restrictions">
+      <div class="panel-header">
+        <div>
+          <div class="panel-title"><span class="icon">↯</span> Current ESRs / TSRs</div>
+          <div class="panel-sub">Upload one workbook containing sheets named exactly Current ESRs and Current TSRs</div>
+        </div>
+        <label class="toggle"><input type="checkbox" id="toggleRestrictions" checked> Show section</label>
+      </div>
+      <div class="panel-body stack">
+        <div>
+          <label for="restrictionsFile">Restrictions workbook (.xlsx)</label>
+          <input id="restrictionsFile" type="file" accept=".xlsx">
+          <div class="helper">Current ESRs columns read: Location, IME, ELR, Number of Days, Delay Mins Last Week, Delay Mins Cumulative, Reason, Responsibility, Comments, Short Term Action. Current TSRs columns read: Location, Cause/Action, Action Owner.</div>
+        </div>
+        <div class="notice" id="restrictionsStatus">No workbook loaded.</div>
+        <div class="section-actions">
+          <button class="secondary small-btn" type="button" id="copyRestrictionsBtn">Copy restrictions section</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel" data-section="assets">
+      <div class="panel-header">
+        <div>
+          <div class="panel-title"><span class="icon">⬢</span> Out of Use Assets</div>
+          <div class="panel-sub">Upload a workbook or add manual commentary</div>
+        </div>
+        <label class="toggle"><input type="checkbox" id="toggleAssets" checked> Show section</label>
+      </div>
+      <div class="panel-body stack">
+        <div>
+          <label for="assetsFile">Assets workbook (.xlsx)</label>
+          <input id="assetsFile" type="file" accept=".xlsx">
+          <div class="helper">Parser looks for headers similar to Asset Type, Location, Duration Out of Use and Impact Level on the first suitable sheet.</div>
+        </div>
+        <div class="notice" id="assetsStatus">No assets workbook loaded.</div>
+        <div>
+          <label for="assetsSummary">Auto summary / manual override</label>
+          <textarea id="assetsSummary" placeholder="Auto-generated after upload, but fully editable."></textarea>
+        </div>
+        <div>
+          <label for="assetsCommentary">Commentary</label>
+          <textarea id="assetsCommentary" placeholder="Provide SNDM commentary and operational implications."></textarea>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel" data-section="engineering">
+      <div class="panel-header">
+        <div>
+          <div class="panel-title"><span class="icon">⌁</span> Future Disruptive Engineering Works</div>
+          <div class="panel-sub">Forward planning narrative for planned works and service impact</div>
+        </div>
+        <label class="toggle"><input type="checkbox" id="toggleEngineering" checked> Show section</label>
+      </div>
+      <div class="panel-body">
+        <label for="engineering">Engineering narrative</label>
+        <textarea id="engineering" placeholder="Location, dates, anticipated service impact, mitigations and key route planning considerations."></textarea>
+      </div>
+    </div>
+
+    <div class="panel" data-section="events">
+      <div class="panel-header">
+        <div>
+          <div class="panel-title"><span class="icon">◎</span> Disruptive Events</div>
+          <div class="panel-sub">Planned or external events that may shape route performance</div>
+        </div>
+        <label class="toggle"><input type="checkbox" id="toggleEvents" checked> Show section</label>
+      </div>
+      <div class="panel-body">
+        <label for="events">Events narrative</label>
+        <textarea id="events" placeholder="Sporting events, concerts, major possessions, weather risk, public events or other anticipated disruption."></textarea>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header">
+        <div>
+          <div class="panel-title"><span class="icon">⧉</span> Copy / Output</div>
+          <div class="panel-sub">Paste directly into Outlook, Teams or other rich text destinations</div>
+        </div>
+      </div>
+      <div class="panel-body stack">
+        <div class="btnbar">
+          <button type="button" id="copyRichBtn">Copy full report (rich)</button>
+          <button type="button" id="copyPlainBtn" class="secondary">Copy full report (plain)</button>
+          <button type="button" id="copyNoEmptyBtn" class="good">Copy without empty sections</button>
+        </div>
+        <div class="helper">Rich copy preserves headings, tables, section cards and formatting for exec comms.</div>
+      </div>
+    </div>
+  </section>
+
+  <aside class="preview-wrap">
+    <div class="preview-shell">
+      <div class="preview-banner">
+        <h2>Live Preview</h2>
+        <p>Executive-ready view of the report exactly as it will be copied.</p>
+        <div class="preview-meta">
+          <span class="copy-chip">Auto insights</span>
+          <span class="copy-chip">HTML copy</span>
+          <span class="copy-chip">Local session save</span>
+        </div>
+      </div>
+      <div class="preview-content" id="previewContent"></div>
+    </div>
+  </aside>
 </div>
 
 <script>
-(function(){
+(() => {
   "use strict";
 
-  const $ = id => document.getElementById(id);
+  const $ = (id) => document.getElementById(id);
+  const storageKey = "periodic_route_strategic_report_builder_v3";
+
   const state = {
-    esrData: [],
-    tsrData: [],
+    esrRows: [],
+    tsrRows: [],
+    assetRows: [],
+    assetInfraRows: [],
+    assetUpsRows: [],
     summaryBase: "",
-    workbookMeta: { loaded:false, filename:"" }
+    restrictionsFileName: "",
+    assetsFileName: ""
   };
 
-  const STORAGE_KEY = "periodic_route_strategic_report_builder_state_v2";
+  const fields = [
+    "period","reportDate","author","titleOverride","summary","assetsSummary","assetsCommentary","engineering","events",
+    "toggleExec","toggleRestrictions","toggleAssets","toggleEngineering","toggleEvents"
+  ];
 
-  function escapeHtml(value){
-    return String(value ?? "").replace(/[&<>"']/g, ch => ({
-      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
-    }[ch]));
-  }
-
-  function setStatus(message, cls){
-    const el = $("uploadStatus");
-    el.className = "status" + (cls ? " " + cls : "");
-    el.textContent = message;
-  }
-
-  function persist(){
-    const payload = {
-      period: $("period").value,
-      date: $("date").value,
-      author: $("author").value,
-      summary: $("summary").value,
-      engineering: $("engineering").value,
-      events: $("events").value,
-      esrData: state.esrData,
-      tsrData: state.tsrData,
-      summaryBase: state.summaryBase,
-      workbookMeta: state.workbookMeta
-    };
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
-  }
-
-  function hydrate(){
+  function init(){
     for(let i=1;i<=13;i++){
       const opt = document.createElement("option");
       opt.value = String(i);
-      opt.textContent = String(i);
+      opt.textContent = `Period ${i}`;
       $("period").appendChild(opt);
     }
-    $("date").value = new Date().toISOString().slice(0,10);
+    $("period").value = "1";
+    $("reportDate").value = new Date().toISOString().slice(0,10);
 
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if(!raw){ render(); return; }
+    fields.forEach(id => {
+      const el = $(id);
+      const evt = el.type === "checkbox" ? "change" : "input";
+      el.addEventListener(evt, () => {
+        if(id === "summary") state.summaryBase = computeSummaryBase($("summary").value);
+        render();
+      });
+    });
 
-    try{
-      const data = JSON.parse(raw);
-      if(data.period) $("period").value = data.period;
-      if(data.date) $("date").value = data.date;
-      if(data.author) $("author").value = data.author;
-      if(data.summary != null) $("summary").value = data.summary;
-      if(data.engineering) $("engineering").value = data.engineering;
-      if(data.events) $("events").value = data.events;
-      state.esrData = Array.isArray(data.esrData) ? data.esrData : [];
-      state.tsrData = Array.isArray(data.tsrData) ? data.tsrData : [];
-      state.summaryBase = data.summaryBase || computeSummaryBase($("summary").value);
-      state.workbookMeta = data.workbookMeta || { loaded:false, filename:"" };
-      if(state.workbookMeta.loaded){
-        setStatus(`Loaded previously parsed workbook${state.workbookMeta.filename ? ": " + state.workbookMeta.filename : "."}`, "ok");
-      }
-    }catch(e){
-      console.warn("Could not restore previous state", e);
-    }
+    $("restrictionsFile").addEventListener("change", handleRestrictionsUpload);
+    $("assetsFile").addEventListener("change", handleAssetsUpload);
+    $("copyRichBtn").addEventListener("click", () => copyRich(document.getElementById("previewContent").outerHTML));
+    $("copyPlainBtn").addEventListener("click", () => copyPlain(getPlainText(true)));
+    $("copyNoEmptyBtn").addEventListener("click", () => copyRich(document.getElementById("previewContent").outerHTML));
+    $("copyRestrictionsBtn").addEventListener("click", () => copyRich(buildRestrictionsSectionHtml()));
+    restore();
     render();
   }
 
-  function computeSummaryBase(summaryText){
-    const marker = "\n\nHighest delay generating ESR currently impacting the route is at ";
-    const idx = summaryText.indexOf(marker);
-    return idx >= 0 ? summaryText.slice(0, idx).trimEnd() : summaryText;
+  function setNotice(id, text, kind=""){
+    const el = $(id);
+    el.className = "notice" + (kind ? " " + kind : "");
+    el.textContent = text;
   }
 
-  function updateSummaryWithInsight(){
-    const base = state.summaryBase || "";
-    const insight = buildTopEsrInsight();
-    $("summary").value = insight ? (base ? `${base}\n\n${insight}` : insight) : base;
+  function escapeHtml(value){
+    return String(value ?? "").replace(/[&<>"']/g, s => ({
+      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+    }[s]));
   }
 
-  function buildTopEsrInsight(){
-    if(!state.esrData.length) return "";
-    const top = state.esrData[0];
-    const location = top.location || "unspecified location";
-    const ime = top.ime || "unspecified IME";
-    const mins = normaliseNumber(top.delayTotal);
-    const minsText = Number.isFinite(mins) ? mins.toLocaleString() : String(top.delayTotal || 0);
-    return `Highest delay generating ESR currently impacting the route is at ${location} (IME: ${ime}) responsible for ${minsText} cumulative delay minutes.`;
+  function nl2br(text){
+    return escapeHtml(text || "").replace(/\n/g, "<br>");
   }
 
   function normaliseNumber(v){
     if(v == null || v === "") return NaN;
-    const cleaned = String(v).replace(/,/g, "").trim();
+    const cleaned = String(v).replace(/,/g,"").trim();
     const n = Number(cleaned);
     return Number.isFinite(n) ? n : NaN;
   }
 
-  function render(){
-    const period = $("period").value || "1";
-    const date = $("date").value || "";
-    const author = $("author").value || "";
-    const summary = $("summary").value || "";
-    const engineering = $("engineering").value || "";
-    const events = $("events").value || "";
+  function sumFinite(nums){
+    return nums.reduce((a,b) => a + (Number.isFinite(b) ? b : 0), 0);
+  }
 
-    const sections = [];
-    sections.push(`
-      <div class="section">
-        <div class="section-title">Executive Summary</div>
-        <div>${escapeHtml(summary).replace(/\n/g,"<br>") || "<span class='helper'>No summary entered.</span>"}</div>
-      </div>
-    `);
+  function computeSummaryBase(text){
+    const marker = "\n\nAuto insight:";
+    const idx = String(text || "").indexOf(marker);
+    return idx >= 0 ? String(text).slice(0, idx).trimEnd() : String(text || "");
+  }
 
-    if(state.esrData.length){
-      sections.push(`
-        <div class="section">
-          <div class="section-title">Current ESRs (Sorted by Cumulative Delay)</div>
-          ${buildEsrTable()}
-        </div>
-      `);
+  function formatTitle(){
+    return $("titleOverride").value.trim() || `East Midlands Route – Period ${$("period").value} Strategic Report`;
+  }
+
+  function updateSummaryAutoText(){
+    const insights = getRestrictionInsights();
+    state.summaryBase = computeSummaryBase($("summary").value);
+    if(!insights.length){
+      $("summary").value = state.summaryBase;
+      setNotice("summaryNotice", "No auto insights generated yet.");
+      return;
     }
+    const auto = "Auto insight:\n" + insights.join("\n");
+    $("summary").value = state.summaryBase ? `${state.summaryBase}\n\n${auto}` : auto;
+    setNotice("summaryNotice", insights.join(" | "), "good");
+  }
 
-    if(state.tsrData.length){
-      sections.push(`
-        <div class="section">
-          <div class="section-title">Current TSRs</div>
-          ${buildTsrTable()}
-        </div>
-      `);
+  function getRestrictionInsights(){
+    if(!state.esrRows.length) return [];
+    const totalDelay = sumFinite(state.esrRows.map(r => normaliseNumber(r.delayTotal)));
+    const top = state.esrRows[0];
+    const topDelay = normaliseNumber(top.delayTotal);
+    const topThree = state.esrRows.slice(0,3);
+    const topThreeDelay = sumFinite(topThree.map(r => normaliseNumber(r.delayTotal)));
+    const pct = totalDelay > 0 ? Math.round((topThreeDelay / totalDelay) * 100) : 0;
+
+    const imeTotals = {};
+    state.esrRows.forEach(r => {
+      const ime = (r.ime || "Unknown").trim() || "Unknown";
+      imeTotals[ime] = (imeTotals[ime] || 0) + (Number.isFinite(normaliseNumber(r.delayTotal)) ? normaliseNumber(r.delayTotal) : 0);
+    });
+    const topIme = Object.entries(imeTotals).sort((a,b) => b[1]-a[1])[0];
+
+    const insights = [];
+    insights.push(`Highest delay generating ESR currently impacting the route is at ${top.location || "unspecified location"} (IME: ${top.ime || "unspecified"}) responsible for ${(Number.isFinite(topDelay) ? topDelay.toLocaleString() : (top.delayTotal || 0))} cumulative delay minutes.`);
+    if(totalDelay > 0 && state.esrRows.length >= 3){
+      insights.push(`The top three ESRs account for ${pct}% of cumulative ESR delay currently recorded across the route.`);
     }
-
-    if(engineering.trim()){
-      sections.push(`
-        <div class="section">
-          <div class="section-title">Future Disruptive Engineering Works</div>
-          <div>${escapeHtml(engineering).replace(/\n/g,"<br>")}</div>
-        </div>
-      `);
+    if(topIme && topIme[1] > 0){
+      insights.push(`The highest delay-contributing IME is ${topIme[0]} with ${Math.round(topIme[1]).toLocaleString()} cumulative delay minutes across current ESRs.`);
     }
+    return insights;
+  }
 
-    if(events.trim()){
-      sections.push(`
-        <div class="section">
-          <div class="section-title">Disruptive Events</div>
-          <div>${escapeHtml(events).replace(/\n/g,"<br>")}</div>
-        </div>
-      `);
+  function getAssetsInsights(){
+    if(!state.assetRows.length) return [];
+    const total = state.assetRows.length;
+    const byImpact = {};
+    state.assetRows.forEach(r => {
+      const impact = (r.impact || "Unknown").trim() || "Unknown";
+      byImpact[impact] = (byImpact[impact] || 0) + 1;
+    });
+    const topImpact = Object.entries(byImpact).sort((a,b)=>b[1]-a[1])[0];
+    const lines = [`${total} out of use asset${total===1?"":"s"} identified in the latest upload.`];
+    if(topImpact){
+      lines.push(`The most common recorded impact level is ${topImpact[0]} (${topImpact[1]} asset${topImpact[1]===1?"":"s"}).`);
     }
+    return lines;
+  }
 
-    const preview = `
-      <div>
-        <h2>East Midlands Route – Period ${escapeHtml(period)} Strategic Report</h2>
-        <div class="meta"><b>Date:</b> ${escapeHtml(date)} &nbsp; | &nbsp; <b>Author:</b> ${escapeHtml(author || "Not provided")}</div>
-        ${sections.join("")}
+  function updateMetrics(){
+    $("metricEsr").textContent = String(state.esrRows.length);
+    $("metricTsr").textContent = String(state.tsrRows.length);
+    $("metricAssets").textContent = String(state.assetRows.length);
+    const totalDelay = sumFinite(state.esrRows.map(r => normaliseNumber(r.delayTotal)));
+    $("metricDelay").textContent = Math.round(totalDelay).toLocaleString();
+  }
+
+  function buildKpis(){
+    const totalDelay = sumFinite(state.esrRows.map(r => normaliseNumber(r.delayTotal)));
+    const top = state.esrRows[0];
+    const topLocation = top ? (top.location || "—") : "—";
+    const topDelay = top ? (Number.isFinite(normaliseNumber(top.delayTotal)) ? normaliseNumber(top.delayTotal).toLocaleString() : String(top.delayTotal || "—")) : "—";
+    return `
+      <div class="kpi-strip">
+        <div class="kpi"><div class="kpi-name">Active ESRs</div><div class="kpi-value">${state.esrRows.length}</div></div>
+        <div class="kpi"><div class="kpi-name">Cumulative ESR Delay</div><div class="kpi-value">${Math.round(totalDelay).toLocaleString()}</div></div>
+        <div class="kpi"><div class="kpi-name">Highest Delay ESR</div><div class="kpi-value" style="font-size:16px">${escapeHtml(topLocation)}<div class="mini-helper" style="margin-top:4px">${escapeHtml(String(topDelay))} mins cumulative</div></div></div>
       </div>
     `;
-    $("preview").innerHTML = preview;
+  }
+
+  function render(){
+    updateMetrics();
+    $("previewContent").innerHTML = getReportHtml(false);
     persist();
   }
 
-  function buildEsrTable(){
-    const rows = state.esrData.map(r => `
-      <tr>
-        <td>${escapeHtml(r.location)}</td>
-        <td>${escapeHtml(r.ime)}</td>
-        <td>${escapeHtml(r.elr)}</td>
-        <td>${escapeHtml(r.days)}</td>
-        <td>${escapeHtml(r.delayWeek)}</td>
-        <td>${escapeHtml(r.delayTotal)}</td>
-        <td>${escapeHtml(r.reason)}</td>
-        <td>${escapeHtml(r.responsibility)}</td>
-        <td>${escapeHtml(r.comments)}</td>
-        <td>${escapeHtml(r.action)}</td>
-      </tr>
-    `).join("");
+  function sectionEnabled(id){
+    return $(id).checked;
+  }
+
+  function getReportHtml(includeEmpty){
+    const pieces = [];
+    pieces.push(`
+      <div style="border:1px solid #d9e2ee;border-radius:10px;padding:14px;margin-bottom:14px;background:#ffffff;">
+        <div style="font-weight:700;color:#0b5cab;margin-bottom:8px;font-size:15px;">Route Strategic Report</div>
+        <div style="border:1px solid #e6edf5;border-radius:8px;padding:12px;background:#f8fbff;">
+          <p><strong>${escapeHtml(formatTitle())}</strong></p>
+          <p style="margin-top:8px"><strong>Date:</strong> ${escapeHtml($("reportDate").value)}<br><strong>Author:</strong> ${escapeHtml($("author").value || "Not provided")}</p>
+        </div>
+      </div>
+    `);
+
+    if(sectionEnabled("toggleExec") && (includeEmpty || $("summary").value.trim())){
+      pieces.push(`
+        <div style="border:1px solid #d9e2ee;border-radius:10px;padding:14px;margin-bottom:14px;background:#ffffff;">
+          <div style="font-weight:700;color:#0b5cab;margin-bottom:8px;font-size:15px;">Executive Summary</div>
+          <div style="border:1px solid #e6edf5;border-radius:8px;padding:12px;background:#f8fbff;"><p>${$("summary").value.trim() ? nl2br($("summary").value) : "<span class='mini-helper'>No content entered.</span>"}</p></div>
+        </div>
+      `);
+    }
+
+    if(sectionEnabled("toggleRestrictions") && (includeEmpty || state.esrRows.length || state.tsrRows.length)){
+      pieces.push(`
+        <div style="border:1px solid #d9e2ee;border-radius:10px;padding:14px;margin-bottom:14px;background:#ffffff;">
+          <div style="font-weight:700;color:#0b5cab;margin-bottom:8px;font-size:15px;">Current ESRs / TSRs Analysis</div>
+          ${buildKpis()}
+          ${buildRestrictionsNarrative(includeEmpty)}
+          ${buildRestrictionsTables(includeEmpty)}
+        </div>
+      `);
+    }
+
+    if(sectionEnabled("toggleAssets") && (includeEmpty || state.assetRows.length || $("assetsSummary").value.trim() || $("assetsCommentary").value.trim())){
+      pieces.push(`
+        <div style="border:1px solid #d9e2ee;border-radius:10px;padding:14px;margin-bottom:14px;background:#ffffff;">
+          <div style="font-weight:700;color:#0b5cab;margin-bottom:8px;font-size:15px;">Out of Use Assets</div>
+          ${buildAssetsSection(includeEmpty)}
+        </div>
+      `);
+    }
+
+    if(sectionEnabled("toggleEngineering") && (includeEmpty || $("engineering").value.trim())){
+      pieces.push(`
+        <div style="border:1px solid #d9e2ee;border-radius:10px;padding:14px;margin-bottom:14px;background:#ffffff;">
+          <div style="font-weight:700;color:#0b5cab;margin-bottom:8px;font-size:15px;">Future Disruptive Engineering Works</div>
+          <div style="border:1px solid #e6edf5;border-radius:8px;padding:12px;background:#f8fbff;"><p>${$("engineering").value.trim() ? nl2br($("engineering").value) : "<span class='mini-helper'>No content entered.</span>"}</p></div>
+        </div>
+      `);
+    }
+
+    if(sectionEnabled("toggleEvents") && (includeEmpty || $("events").value.trim())){
+      pieces.push(`
+        <div style="border:1px solid #d9e2ee;border-radius:10px;padding:14px;margin-bottom:14px;background:#ffffff;">
+          <div style="font-weight:700;color:#0b5cab;margin-bottom:8px;font-size:15px;">Disruptive Events</div>
+          <div style="border:1px solid #e6edf5;border-radius:8px;padding:12px;background:#f8fbff;"><p>${$("events").value.trim() ? nl2br($("events").value) : "<span class='mini-helper'>No content entered.</span>"}</p></div>
+        </div>
+      `);
+    }
+
+    return pieces.join("");
+  }
+
+  function buildRestrictionsNarrative(includeEmpty){
+    const insights = getRestrictionInsights();
+    if(!insights.length && !includeEmpty) return "";
     return `
-      <table>
-        <tr>
-          <th>Location</th><th>IME</th><th>ELR</th><th>Days</th><th>Delay Last Week</th>
-          <th>Delay Cumulative</th><th>Reason</th><th>Responsibility</th><th>Comments</th><th>Short Term Action</th>
-        </tr>
-        ${rows}
-      </table>
+      <div class="report-card" style="margin-bottom:12px">
+        <p><strong>Strategic view</strong></p>
+        ${insights.length ? `<ul class="list-tight">${insights.map(x => `<li>${escapeHtml(x)}</li>`).join("")}</ul>` : "<p class='mini-helper'>No parsed restriction insights available.</p>"}
+      </div>
+    `;
+  }
+
+  function buildRestrictionsTables(includeEmpty){
+    let html = "";
+    if(state.esrRows.length || includeEmpty){
+      html += `
+        <div class="report-card" style="margin-bottom:12px">
+          <p style="font-weight:800;margin-bottom:10px">Current ESRs (sorted by Delay Mins Cumulative)</p>
+          ${state.esrRows.length ? buildEsrTable() : "<p class='mini-helper'>No ESR rows loaded.</p>"}
+        </div>
+      `;
+    }
+    if(state.tsrRows.length || includeEmpty){
+      html += `
+        <div style="border:1px solid #e6edf5;border-radius:8px;padding:12px;background:#f8fbff;">
+          <p style="font-weight:800;margin-bottom:10px">Current TSRs</p>
+          ${state.tsrRows.length ? buildTsrTable() : "<p class='mini-helper'>No TSR rows loaded.</p>"}
+        </div>
+      `;
+    }
+    return html;
+  }
+
+  function buildRestrictionsSectionHtml(){
+    return `
+      <div style="font-family:Segoe UI,Arial,sans-serif">${buildRestrictionsNarrative(false)}${buildRestrictionsTables(false)}</div>
+    `;
+  }
+
+  function buildEsrTable(){
+    return `
+      <div class="table-wrap">
+        <table style="border-collapse:collapse;width:100%;border:1px solid #cfd8e3;">
+          <th style="border:1px solid #cfd8e3;padding:6px 8px;background:linear-gradient(180deg,#f3f7ff 0%,#e6efff 100%);text-align:left;font-weight:600;"ead>
+            <tr>
+              <th style="border:1px solid #cfd8e3;padding:6px 8px;background:linear-gradient(180deg,#f3f7ff 0%,#e6efff 100%);text-align:left;font-weight:600;">Location</th>
+              <th style="border:1px solid #cfd8e3;padding:6px 8px;background:linear-gradient(180deg,#f3f7ff 0%,#e6efff 100%);text-align:left;font-weight:600;">IME</th>
+              <th style="border:1px solid #cfd8e3;padding:6px 8px;background:linear-gradient(180deg,#f3f7ff 0%,#e6efff 100%);text-align:left;font-weight:600;">ELR</th>
+              <th style="border:1px solid #cfd8e3;padding:6px 8px;background:linear-gradient(180deg,#f3f7ff 0%,#e6efff 100%);text-align:left;font-weight:600;">Number of Days</th>
+              <th style="border:1px solid #cfd8e3;padding:6px 8px;background:linear-gradient(180deg,#f3f7ff 0%,#e6efff 100%);text-align:left;font-weight:600;">Delay Mins Last Week</th>
+              <th style="border:1px solid #cfd8e3;padding:6px 8px;background:linear-gradient(180deg,#f3f7ff 0%,#e6efff 100%);text-align:left;font-weight:600;">Delay Mins Cumulative</th>
+              <th style="border:1px solid #cfd8e3;padding:6px 8px;background:linear-gradient(180deg,#f3f7ff 0%,#e6efff 100%);text-align:left;font-weight:600;">Reason</th>
+              <th style="border:1px solid #cfd8e3;padding:6px 8px;background:linear-gradient(180deg,#f3f7ff 0%,#e6efff 100%);text-align:left;font-weight:600;">Responsibility</th>
+              <th style="border:1px solid #cfd8e3;padding:6px 8px;background:linear-gradient(180deg,#f3f7ff 0%,#e6efff 100%);text-align:left;font-weight:600;">Comments</th>
+              <th style="border:1px solid #cfd8e3;padding:6px 8px;background:linear-gradient(180deg,#f3f7ff 0%,#e6efff 100%);text-align:left;font-weight:600;">Short Term Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${state.esrRows.map(r => `
+              <tr>
+                <td style="border:1px solid #cfd8e3;padding:6px 8px;">${escapeHtml(r.location)}</td>
+                <td style="border:1px solid #cfd8e3;padding:6px 8px;">${escapeHtml(r.ime)}</td>
+                <td style="border:1px solid #cfd8e3;padding:6px 8px;">${escapeHtml(r.elr)}</td>
+                <td style="border:1px solid #cfd8e3;padding:6px 8px;">${escapeHtml(r.days)}</td>
+                <td style="border:1px solid #cfd8e3;padding:6px 8px;">${escapeHtml(r.delayWeek)}</td>
+                <td style="border:1px solid #cfd8e3;padding:6px 8px;" class="${(function(v){
+  const n = Number(String(v).replace(/,/g,""));
+  if(!isNaN(n)){
+    if(n>1000) return "rag-red";
+    if(n>=500) return "rag-amber";
+    return "rag-green";
+  }
+  return "";
+})(r.delayTotal)}">${escapeHtml(r.delayTotal)}</td>
+                <td style="border:1px solid #cfd8e3;padding:6px 8px;">${escapeHtml(r.reason)}</td>
+                <td style="border:1px solid #cfd8e3;padding:6px 8px;">${escapeHtml(r.responsibility)}</td>
+                <td style="border:1px solid #cfd8e3;padding:6px 8px;">${escapeHtml(r.comments)}</td>
+                <td style="border:1px solid #cfd8e3;padding:6px 8px;">${escapeHtml(r.action)}</td>
+              </tr>`).join("")}
+          </tbody>
+        </table>
+      </div>
     `;
   }
 
   function buildTsrTable(){
-    const rows = state.tsrData.map(r => `
-      <tr>
-        <td>${escapeHtml(r.location)}</td>
-        <td>${escapeHtml(r.cause)}</td>
-        <td>${escapeHtml(r.owner)}</td>
-      </tr>
-    `).join("");
     return `
-      <table>
-        <tr><th>Location</th><th>Cause / Action</th><th>Action Owner</th></tr>
-        ${rows}
-      </table>
+      <div class="table-wrap">
+        <table style="border-collapse:collapse;width:100%;border:1px solid #cfd8e3;">
+          <th style="border:1px solid #cfd8e3;padding:6px 8px;background:linear-gradient(180deg,#f3f7ff 0%,#e6efff 100%);text-align:left;font-weight:600;"ead>
+            <tr>
+              <th style="border:1px solid #cfd8e3;padding:6px 8px;background:linear-gradient(180deg,#f3f7ff 0%,#e6efff 100%);text-align:left;font-weight:600;">Location</th>
+              <th style="border:1px solid #cfd8e3;padding:6px 8px;background:linear-gradient(180deg,#f3f7ff 0%,#e6efff 100%);text-align:left;font-weight:600;">Cause / Action</th>
+              <th style="border:1px solid #cfd8e3;padding:6px 8px;background:linear-gradient(180deg,#f3f7ff 0%,#e6efff 100%);text-align:left;font-weight:600;">Action Owner</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${state.tsrRows.map(r => `
+              <tr>
+                <td style="border:1px solid #cfd8e3;padding:6px 8px;">${escapeHtml(r.location)}</td>
+                <td style="border:1px solid #cfd8e3;padding:6px 8px;">${escapeHtml(r.cause)}</td>
+                <td style="border:1px solid #cfd8e3;padding:6px 8px;">${escapeHtml(r.owner)}</td>
+              </tr>`).join("")}
+          </tbody>
+        </table>
+      </div>
     `;
   }
 
-  async function copyText(text){
-    try{
-      await navigator.clipboard.writeText(text);
-      alert("Copied");
-    }catch(err){
-      console.error(err);
-      alert("Copy failed in this browser context.");
-    }
+  function buildAssetsSection(includeEmpty){
+    const hasRows = (state.assetInfraRows && state.assetInfraRows.length) || (state.assetUpsRows && state.assetUpsRows.length);
+    return `
+      ${(hasRows || includeEmpty) ? `
+      <div class="report-card" style="margin-bottom:12px">
+        ${hasRows ? buildAssetsTable() : "<p class='mini-helper'>No asset rows loaded.</p>"}
+      </div>` : ""}
+      ${($("assetsCommentary").value.trim() || includeEmpty) ? `
+      <div style="border:1px solid #e6edf5;border-radius:8px;padding:12px;background:#f8fbff;">
+        <p><strong>Commentary</strong></p>
+        <p>${$("assetsCommentary").value.trim() ? nl2br($("assetsCommentary").value) : "<span class='mini-helper'>No commentary entered.</span>"}</p>
+      </div>` : ""}
+    `;
   }
 
-  function previewToPlainText(){
+  function buildSheetReplicaTable(rows){
+    if(!rows || !rows.length) return "<p class='mini-helper'>No rows loaded.</p>";
+    const headers = Object.keys(rows[0] || {});
+    return `
+      <div class="table-wrap">
+        <table style="border-collapse:collapse;width:100%;border:1px solid #cfd8e3;">
+          <thead>
+            <tr>
+              ${headers.map(h => `<th style="border:1px solid #cfd8e3;padding:6px 8px;background:linear-gradient(180deg,#f3f7ff 0%,#e6efff 100%);text-align:left;font-weight:600;">${escapeHtml(h)}</th>`).join("")}
+            </tr>
+          </thead>
+          <tbody>
+            ${rows.map(r => `<tr>${headers.map(h => `<td style="border:1px solid #cfd8e3;padding:6px 8px;">${escapeHtml(r[h])}</td>`).join("")}</tr>`).join("")}
+          </tbody>
+        </table>
+      </div>
+    `;
+  }
+
+  function buildAssetsTable(){
+    const infra = state.assetInfraRows || [];
+    const ups = state.assetUpsRows || [];
+    let sections = "";
+
+    if(infra.length){
+      sections += `
+        <div style="margin-bottom:12px">
+          <p style="font-weight:800;margin-bottom:8px">Infrastructure OOU</p>
+          ${buildSheetReplicaTable(infra)}
+        </div>`;
+    }
+
+    if(ups.length){
+      sections += `
+        <div>
+          <p style="font-weight:800;margin-bottom:8px">UPS Offline</p>
+          ${buildSheetReplicaTable(ups)}
+        </div>`;
+    }
+
+    return sections || "<p class='mini-helper'>No asset rows loaded.</p>";
+  }
+
+  function getPlainText(includeEmpty){
     const lines = [];
-    lines.push(`East Midlands Route – Period ${$("period").value} Strategic Report`);
-    lines.push(`Date: ${$("date").value}`);
+    lines.push(formatTitle());
+    lines.push(`Date: ${$("reportDate").value}`);
     lines.push(`Author: ${$("author").value || "Not provided"}`);
     lines.push("");
-    lines.push("Executive Summary");
-    lines.push($("summary").value || "");
-    if(state.esrData.length){
+    if(sectionEnabled("toggleExec") && (includeEmpty || $("summary").value.trim())){
+      lines.push("Executive Summary");
+      lines.push($("summary").value || "");
       lines.push("");
-      lines.push("Current ESRs (Sorted by Cumulative Delay)");
-      state.esrData.forEach(r => {
-        lines.push(`- ${r.location} | IME: ${r.ime} | ELR: ${r.elr} | Days: ${r.days} | Delay Last Week: ${r.delayWeek} | Delay Cumulative: ${r.delayTotal} | Reason: ${r.reason} | Responsibility: ${r.responsibility} | Comments: ${r.comments} | Short Term Action: ${r.action}`);
-      });
     }
-    if(state.tsrData.length){
+    if(sectionEnabled("toggleRestrictions") && (includeEmpty || state.esrRows.length || state.tsrRows.length)){
+      lines.push("Current ESRs / TSRs Analysis");
+      getRestrictionInsights().forEach(x => lines.push(`- ${x}`));
+      if(state.esrRows.length){
+        lines.push("");
+        lines.push("Current ESRs");
+        state.esrRows.forEach(r => lines.push(`- ${r.location} | IME: ${r.ime} | ELR: ${r.elr} | Days: ${r.days} | Delay Last Week: ${r.delayWeek} | Delay Cumulative: ${r.delayTotal} | Reason: ${r.reason} | Responsibility: ${r.responsibility} | Comments: ${r.comments} | Short Term Action: ${r.action}`));
+      }
+      if(state.tsrRows.length){
+        lines.push("");
+        lines.push("Current TSRs");
+        state.tsrRows.forEach(r => lines.push(`- ${r.location} | Cause / Action: ${r.cause} | Action Owner: ${r.owner}`));
+      }
       lines.push("");
-      lines.push("Current TSRs");
-      state.tsrData.forEach(r => {
-        lines.push(`- ${r.location} | Cause / Action: ${r.cause} | Action Owner: ${r.owner}`);
-      });
     }
-    if($("engineering").value.trim()){
+    if(sectionEnabled("toggleAssets") && (includeEmpty || state.assetRows.length || $("assetsSummary").value.trim() || $("assetsCommentary").value.trim())){
+      lines.push("Out of Use Assets");
+      getAssetsInsights().forEach(x => lines.push(`- ${x}`));
+      if($("assetsSummary").value.trim()) lines.push($("assetsSummary").value.trim());
+      if(state.assetRows.length) state.assetRows.forEach(r => lines.push(`- ${r.assetType} | ${r.location} | ${r.duration} | ${r.impact}`));
+      if($("assetsCommentary").value.trim()) lines.push($("assetsCommentary").value.trim());
       lines.push("");
+    }
+    if(sectionEnabled("toggleEngineering") && (includeEmpty || $("engineering").value.trim())){
       lines.push("Future Disruptive Engineering Works");
       lines.push($("engineering").value.trim());
-    }
-    if($("events").value.trim()){
       lines.push("");
+    }
+    if(sectionEnabled("toggleEvents") && (includeEmpty || $("events").value.trim())){
       lines.push("Disruptive Events");
       lines.push($("events").value.trim());
+      lines.push("");
     }
     return lines.join("\n");
   }
 
-  // -------- Minimal embedded XLSX parser --------
+  
+
+async function copyRich(){
+  try{
+    const preview = document.getElementById('previewContent').outerHTML;
+    const styles = Array.from(document.querySelectorAll('style')).map(s => s.outerHTML).join('\n');
+    const payload = `<div>${styles}${preview}</div>`;
+
+    await navigator.clipboard.write([
+      new ClipboardItem({
+        'text/html': new Blob([payload], {type:'text/html'}),
+        'text/plain': new Blob([document.getElementById('previewContent').innerText], {type:'text/plain'})
+      })
+    ]);
+
+    alert('Preview copied exactly as shown.');
+  }catch(err){
+    console.error(err);
+    alert('Rich copy failed in this browser context.');
+  }
+}
+  async function copyPlain(text){
+    try{
+      await navigator.clipboard.writeText(text);
+      alert("Plain text report copied.");
+    }catch(err){
+      console.error(err);
+      alert("Plain copy failed in this browser context.");
+    }
+  }
+
+  function stripHtml(html){
+    const div = document.createElement("div");
+    div.innerHTML = html;
+    return div.innerText;
+  }
+
+  function persist(){
+    const data = {};
+    fields.forEach(id => {
+      const el = $(id);
+      data[id] = el.type === "checkbox" ? el.checked : el.value;
+    });
+    data.esrRows = state.esrRows;
+    data.tsrRows = state.tsrRows;
+    data.assetRows = state.assetRows;
+    data.assetInfraRows = state.assetInfraRows;
+    data.assetUpsRows = state.assetUpsRows;
+    data.summaryBase = state.summaryBase;
+    data.restrictionsFileName = state.restrictionsFileName;
+    data.assetsFileName = state.assetsFileName;
+    localStorage.setItem(storageKey, JSON.stringify(data));
+  }
+
+  function restore(){
+    const raw = localStorage.getItem(storageKey);
+    if(!raw) return;
+    try{
+      const data = JSON.parse(raw);
+      fields.forEach(id => {
+        if(!(id in data)) return;
+        const el = $(id);
+        if(el.type === "checkbox") el.checked = !!data[id];
+        else el.value = data[id];
+      });
+      state.esrRows = Array.isArray(data.esrRows) ? data.esrRows : [];
+      state.tsrRows = Array.isArray(data.tsrRows) ? data.tsrRows : [];
+      state.assetRows = Array.isArray(data.assetRows) ? data.assetRows : [];
+      state.assetInfraRows = Array.isArray(data.assetInfraRows) ? data.assetInfraRows : [];
+      state.assetUpsRows = Array.isArray(data.assetUpsRows) ? data.assetUpsRows : [];
+      state.summaryBase = data.summaryBase || computeSummaryBase($("summary").value);
+      state.restrictionsFileName = data.restrictionsFileName || "";
+      state.assetsFileName = data.assetsFileName || "";
+      if(state.restrictionsFileName){
+        setNotice("restrictionsStatus", `Previously parsed workbook: ${state.restrictionsFileName}`, "good");
+      }
+      if(state.assetsFileName){
+        setNotice("assetsStatus", `Previously parsed workbook: ${state.assetsFileName}`, "good");
+      }
+    }catch(e){
+      console.warn("Restore failed", e);
+    }
+  }
+
+  function normaliseHeader(v){
+    return String(v || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+  }
+
+  function findHeader(headers, wanted){
+
+  const target = normaliseHeader(wanted);
+
+  for(const h of headers){
+
+    const norm = normaliseHeader(h);
+
+    if(norm === target) return h;
+
+    if(norm.includes(target)) return h;
+
+    if(target.includes(norm)) return h;
+
+  }
+
+  return null;
+}
+
+  function takeLeadingActiveRows(rows, locationHeader){
+    if(!rows.length || !locationHeader) return [];
+    const out = [];
+    let started = false;
+    for(const row of rows){
+      const loc = String((row[locationHeader] ?? "")).trim();
+      if(loc){
+        started = true;
+        out.push(row);
+      }else if(started){
+        break;
+      }
+    }
+    return out;
+}
+
+  function mapEsrRows(rows){
+    if(!rows.length) return [];
+    const headers = Object.keys(rows[0]);
+    const m = {
+      location: findHeader(headers,"Location"),
+      ime: findHeader(headers,"IME"),
+      elr: findHeader(headers,"ELR"),
+      days: findHeader(headers,"Number of Days"),
+      delayWeek: findHeader(headers,"Delay Mins Last week"),
+      delayTotal: findHeader(headers,"Delay Mins Cumulative"),
+      reason: findHeader(headers,"Reason"),
+      responsibility: findHeader(headers,"Responsibility"),
+      comments: findHeader(headers,"Comments Work done"),
+      action: findHeader(headers,"Short term action")
+    };
+    const activeRows = takeLeadingActiveRows(rows, m.location);
+    return activeRows.map(r => ({
+      location: m.location ? r[m.location] : "",
+      ime: m.ime ? r[m.ime] : "",
+      elr: m.elr ? r[m.elr] : "",
+      days: m.days ? r[m.days] : "",
+      delayWeek: m.delayWeek ? r[m.delayWeek] : "",
+      delayTotal: m.delayTotal ? r[m.delayTotal] : "",
+      reason: m.reason ? r[m.reason] : "",
+      responsibility: m.responsibility ? r[m.responsibility] : "",
+      comments: m.comments ? r[m.comments] : "",
+      action: m.action ? r[m.action] : ""
+    })).sort((a,b) => {
+      const av = normaliseNumber(a.delayTotal); const bv = normaliseNumber(b.delayTotal);
+      return (Number.isFinite(bv) ? bv : -Infinity) - (Number.isFinite(av) ? av : -Infinity);
+    });
+  }
+
+  function mapTsrRows(rows){
+
+  if(!rows.length) return [];
+
+  const headers = Object.keys(rows[0]);
+
+  const locationHeader = findHeader(headers,"Location");
+  const causeHeader = findHeader(headers,"Cause Action");
+  const ownerHeader = findHeader(headers,"Action Owner");
+
+  const activeRows = takeLeadingActiveRows(rows, locationHeader);
+
+  return activeRows.map(r => ({
+    location: locationHeader ? r[locationHeader] : "",
+    cause: causeHeader ? r[causeHeader] : "",
+    owner: ownerHeader ? r[ownerHeader] : ""
+  })).filter(r => r.location || r.cause || r.owner);
+
+}
+
+  function mapAssetRows(rows){
+    if(!rows.length) return [];
+    const headers = Object.keys(rows[0]);
+    const m = {
+      assetType: findHeader(headers,"Asset Type") || findHeader(headers,"Asset"),
+      location: findHeader(headers,"Location"),
+      duration: findHeader(headers,"Duration Out of Use") || findHeader(headers,"Duration") || findHeader(headers,"Number of Days"),
+      impact: findHeader(headers,"Impact Level") || findHeader(headers,"Impact")
+    };
+    return rows.map(r => ({
+      assetType: m.assetType ? r[m.assetType] : "",
+      location: m.location ? r[m.location] : "",
+      duration: m.duration ? r[m.duration] : "",
+      impact: m.impact ? r[m.impact] : ""
+    })).filter(r => Object.values(r).some(v => String(v || "").trim() !== ""));
+  }
+
+  async function handleRestrictionsUpload(ev){
+    const file = ev.target.files && ev.target.files[0];
+    if(!file) return;
+    setNotice("restrictionsStatus", "Parsing workbook...");
+    try{
+      const wb = await parseXlsx(file);
+      if(!wb.sheets["Current ESR's"] && !wb.sheets["Current TSRs"]){
+        throw new Error("Could not find sheets named exactly Current ESRs or Current TSRs.");
+      }
+      state.esrRows = mapEsrRows(wb.sheets["Current ESR's"] || []);
+      state.tsrRows = mapTsrRows(wb.sheets["Current TSRs"] || []);
+      state.restrictionsFileName = file.name;
+      updateSummaryAutoText();
+      setNotice("restrictionsStatus", `Parsed ${state.esrRows.length} ESR rows and ${state.tsrRows.length} TSR rows from ${file.name}.`, "good");
+      render();
+    }catch(err){
+      console.error(err);
+      setNotice("restrictionsStatus", `Upload failed: ${err.message}`, "bad");
+      alert(`Restrictions upload failed: ${err.message}`);
+    }
+  }
+
+  
+async function handleAssetsUpload(ev){
+  const file = ev.target.files && ev.target.files[0];
+  if(!file) return;
+  setNotice("assetsStatus","Parsing workbook...");
+  try{
+    const wb = await parseXlsx(file);
+
+    let infraRows = [];
+    let upsRows = [];
+
+    Object.keys(wb.sheets).forEach(name => {
+      const normal = name.toLowerCase().replace(/\s+/g,"").replace(/_/g,"");
+      if(normal.includes("infrastructureoou")){
+        infraRows = wb.sheets[name] || [];
+      }
+      if(normal.includes("upsoffline")){
+        upsRows = wb.sheets[name] || [];
+      }
+    });
+
+    const combined = [].concat(infraRows, upsRows);
+
+    if(!combined.length){
+      throw new Error("Could not find Infrastructure_OOU or UPS_Offline sheets.");
+    }
+
+    state.assetInfraRows = infraRows;
+    state.assetUpsRows = upsRows;
+    state.assetRows = combined;
+    state.assetsFileName = file.name;
+
+    setNotice("assetsStatus",`Parsed ${infraRows.length} Infrastructure OOU rows and ${upsRows.length} UPS Offline rows from ${file.name}.`,"good");
+    render();
+  }catch(err){
+    console.error(err);
+    setNotice("assetsStatus",`Upload failed: ${err.message}`,"bad");
+    alert(`Assets upload failed: ${err.message}`);
+  }
+}
+
+
+  function findBestAssetSheet(wb){
+    const sheetNames = Object.keys(wb.sheets);
+    let combined = [];
+    sheetNames.forEach(name => {
+      const rows = wb.sheets[name] || [];
+      if(!rows.length) return;
+
+      const headers = Object.keys(rows[0] || {});
+      const score = [
+        findHeader(headers,"Asset Type") || findHeader(headers,"Asset"),
+        findHeader(headers,"Location"),
+        findHeader(headers,"Duration Out of Use") || findHeader(headers,"Duration") || findHeader(headers,"Number of Days"),
+        findHeader(headers,"Impact Level") || findHeader(headers,"Impact")
+      ].filter(Boolean).length;
+
+      if(score >= 2){
+        combined = combined.concat(rows);
+      }
+    });
+    return combined;
+  }
 
   async function parseXlsx(file){
     const buffer = await file.arrayBuffer();
-    const zipEntries = await unzipXlsx(buffer);
+    const entries = await unzipXlsx(buffer);
 
-    const workbookXml = getTextEntry(zipEntries, "xl/workbook.xml");
-    const workbookRelsXml = getTextEntry(zipEntries, "xl/_rels/workbook.xml.rels");
-    if(!workbookXml || !workbookRelsXml){
-      throw new Error("Workbook structure could not be read.");
-    }
+    const workbookXml = entries.get("xl/workbook.xml");
+    const relsXml = entries.get("xl/_rels/workbook.xml.rels");
+    if(!workbookXml || !relsXml) throw new Error("Workbook XML could not be read.");
 
-    const sharedStringsXml = getTextEntry(zipEntries, "xl/sharedStrings.xml");
-    const stylesXml = getTextEntry(zipEntries, "xl/styles.xml");
-    const sharedStrings = sharedStringsXml ? parseSharedStrings(sharedStringsXml) : [];
-    const dateStyleSet = stylesXml ? parseDateStyleIndexes(stylesXml) : new Set();
-    const workbook = parseWorkbook(workbookXml, workbookRelsXml);
+    const sharedStrings = entries.get("xl/sharedStrings.xml") ? parseSharedStrings(entries.get("xl/sharedStrings.xml")) : [];
+    const dateStyleIndexes = entries.get("xl/styles.xml") ? parseDateStyleIndexes(entries.get("xl/styles.xml")) : new Set();
+    const wbMeta = parseWorkbook(entries.get("xl/workbook.xml"), relsXml);
+
     const sheets = {};
-
-    for(const sheet of workbook.sheets){
-      const path = resolveWorkbookTarget(sheet.target);
-      const xml = getTextEntry(zipEntries, path);
-      if(!xml) continue;
-      sheets[sheet.name] = parseSheet(xml, sharedStrings, dateStyleSet);
-    }
-    return { sheetNames: workbook.sheets.map(s => s.name), sheets };
-  }
-
-  function getTextEntry(map, name){
-    return map.get(name) || null;
-  }
-
-  function resolveWorkbookTarget(target){
-    if(target.startsWith("/")) return target.replace(/^\//, "");
-    return "xl/" + target.replace(/^(\.\/)?/, "");
+    wbMeta.sheets.forEach(sheet => {
+      const path = resolveSheetPath(sheet.target);
+      const xml = entries.get(path);
+      if(xml) sheets[sheet.name] = parseSheet(xml, sharedStrings, dateStyleIndexes);
+    });
+    return {sheets};
   }
 
   async function unzipXlsx(arrayBuffer){
     const view = new DataView(arrayBuffer);
-    const entries = parseCentralDirectory(view, arrayBuffer.byteLength);
+    const entriesMeta = parseCentralDirectory(view, arrayBuffer.byteLength);
     const out = new Map();
-
-    for(const entry of entries){
+    for(const entry of entriesMeta){
       const raw = arrayBuffer.slice(entry.dataStart, entry.dataStart + entry.compressedSize);
-      let data;
+      let bytes;
       if(entry.compressionMethod === 0){
-        data = new Uint8Array(raw);
+        bytes = new Uint8Array(raw);
       }else if(entry.compressionMethod === 8){
-        data = await inflateRaw(raw);
+        bytes = await inflateRaw(raw);
       }else{
         continue;
       }
       if(entry.fileName.endsWith(".xml") || entry.fileName.endsWith(".rels")){
-        out.set(entry.fileName, new TextDecoder("utf-8").decode(data));
+        out.set(entry.fileName, new TextDecoder("utf-8").decode(bytes));
       }
     }
     return out;
   }
 
   function parseCentralDirectory(view, byteLength){
-    const EOCD_SIG = 0x06054b50;
-    const CEN_SIG = 0x02014b50;
-    const LOC_SIG = 0x04034b50;
-
+    const EOCD = 0x06054b50, CEN = 0x02014b50, LOC = 0x04034b50;
     let eocdOffset = -1;
     const min = Math.max(0, byteLength - 65557);
     for(let i = byteLength - 22; i >= min; i--){
-      if(view.getUint32(i, true) === EOCD_SIG){
-        eocdOffset = i;
-        break;
-      }
+      if(view.getUint32(i, true) === EOCD){ eocdOffset = i; break; }
     }
-    if(eocdOffset < 0) throw new Error("End of central directory not found.");
-
+    if(eocdOffset < 0) throw new Error("Zip end record not found.");
     const totalEntries = view.getUint16(eocdOffset + 10, true);
-    const centralDirOffset = view.getUint32(eocdOffset + 16, true);
-
+    const centralOffset = view.getUint32(eocdOffset + 16, true);
     const entries = [];
-    let ptr = centralDirOffset;
-
+    let ptr = centralOffset;
     for(let i=0;i<totalEntries;i++){
-      if(view.getUint32(ptr, true) !== CEN_SIG) throw new Error("Invalid central directory entry.");
+      if(view.getUint32(ptr, true) !== CEN) throw new Error("Invalid zip central directory.");
       const compressionMethod = view.getUint16(ptr + 10, true);
       const compressedSize = view.getUint32(ptr + 20, true);
       const fileNameLength = view.getUint16(ptr + 28, true);
@@ -466,20 +1220,19 @@
       const localHeaderOffset = view.getUint32(ptr + 42, true);
       const fileName = readString(view, ptr + 46, fileNameLength);
 
-      if(view.getUint32(localHeaderOffset, true) !== LOC_SIG) throw new Error("Invalid local file header.");
+      if(view.getUint32(localHeaderOffset, true) !== LOC) throw new Error("Invalid local file header.");
       const localNameLength = view.getUint16(localHeaderOffset + 26, true);
       const localExtraLength = view.getUint16(localHeaderOffset + 28, true);
       const dataStart = localHeaderOffset + 30 + localNameLength + localExtraLength;
 
-      entries.push({ fileName, compressionMethod, compressedSize, dataStart });
+      entries.push({fileName, compressionMethod, compressedSize, dataStart});
       ptr += 46 + fileNameLength + extraLength + commentLength;
     }
     return entries;
   }
 
   function readString(view, offset, length){
-    const bytes = new Uint8Array(view.buffer, offset, length);
-    return new TextDecoder("utf-8").decode(bytes);
+    return new TextDecoder("utf-8").decode(new Uint8Array(view.buffer, offset, length));
   }
 
   async function inflateRaw(rawBuffer){
@@ -488,239 +1241,126 @@
     }
     const ds = new DecompressionStream("deflate-raw");
     const stream = new Blob([rawBuffer]).stream().pipeThrough(ds);
-    const response = new Response(stream);
-    const ab = await response.arrayBuffer();
+    const ab = await new Response(stream).arrayBuffer();
     return new Uint8Array(ab);
   }
 
-  function parseXml(xmlText){
-    return new DOMParser().parseFromString(xmlText, "application/xml");
+  function parseXml(text){
+    return new DOMParser().parseFromString(text, "application/xml");
   }
 
   function parseWorkbook(workbookXml, relsXml){
     const wbDoc = parseXml(workbookXml);
-    const relsDoc = parseXml(relsXml);
+    const relDoc = parseXml(relsXml);
     const relMap = new Map();
-    relsDoc.querySelectorAll("Relationship").forEach(rel => {
-      relMap.set(rel.getAttribute("Id"), rel.getAttribute("Target"));
-    });
+    relDoc.querySelectorAll("Relationship").forEach(r => relMap.set(r.getAttribute("Id"), r.getAttribute("Target")));
     const sheets = [];
-    wbDoc.querySelectorAll("sheets > sheet").forEach(sheet => {
-      const name = sheet.getAttribute("name");
-      const relId = sheet.getAttribute("r:id");
-      sheets.push({ name, target: relMap.get(relId) });
+    wbDoc.querySelectorAll("sheets > sheet").forEach(s => {
+      sheets.push({name: s.getAttribute("name"), target: relMap.get(s.getAttribute("r:id"))});
     });
-    return { sheets };
+    return {sheets};
   }
 
-  function parseSharedStrings(xmlText){
-    const doc = parseXml(xmlText);
+  function resolveSheetPath(target){
+    if(target.startsWith("/")) return target.replace(/^\//,"");
+    return "xl/" + target.replace(/^(\.\/)?/,"");
+  }
+
+  function parseSharedStrings(xml){
+    const doc = parseXml(xml);
     const values = [];
     doc.querySelectorAll("si").forEach(si => {
       let text = "";
-      si.querySelectorAll("t").forEach(t => { text += t.textContent || ""; });
+      si.querySelectorAll("t").forEach(t => text += (t.textContent || ""));
       values.push(text);
     });
     return values;
   }
 
-  function parseDateStyleIndexes(xmlText){
-    const doc = parseXml(xmlText);
-    const customNumFmtDateIds = new Set();
+  function parseDateStyleIndexes(xml){
+    const doc = parseXml(xml);
+    const customDateIds = new Set();
     doc.querySelectorAll("numFmts numFmt").forEach(nf => {
       const id = Number(nf.getAttribute("numFmtId"));
-      const code = (nf.getAttribute("formatCode") || "").toLowerCase();
-      if(/[dmyhs]/.test(code)) customNumFmtDateIds.add(id);
+      const fmt = (nf.getAttribute("formatCode") || "").toLowerCase();
+      if(/[dmyhs]/.test(fmt)) customDateIds.add(id);
     });
     const builtInDateIds = new Set([14,15,16,17,18,19,20,21,22,45,46,47]);
-    const styleIndexes = new Set();
+    const styles = new Set();
     doc.querySelectorAll("cellXfs xf").forEach((xf, idx) => {
       const numFmtId = Number(xf.getAttribute("numFmtId"));
-      if(customNumFmtDateIds.has(numFmtId) || builtInDateIds.has(numFmtId)) styleIndexes.add(idx);
+      if(customDateIds.has(numFmtId) || builtInDateIds.has(numFmtId)) styles.add(idx);
     });
-    return styleIndexes;
+    return styles;
   }
 
-  function excelSerialDateToIso(serial){
-    const days = Math.floor(serial);
-    const frac = serial - days;
-    const epoch = Date.UTC(1899, 11, 30);
-    const millis = days * 86400000 + Math.round(frac * 86400000);
-    const d = new Date(epoch + millis);
-    return d.toISOString().slice(0,10);
+  function excelSerialToDate(serial){
+    const epoch = Date.UTC(1899,11,30);
+    const millis = Math.round(Number(serial) * 86400000);
+    return new Date(epoch + millis).toISOString().slice(0,10);
   }
 
-  function parseSheet(xmlText, sharedStrings, dateStyleSet){
-    const doc = parseXml(xmlText);
+  function colIndex(refLetters){
+    if(!refLetters) return 0;
+    let n = 0;
+    for(const ch of refLetters.toUpperCase()) n = n * 26 + (ch.charCodeAt(0) - 64);
+    return n - 1;
+  }
+
+  function parseSheet(xml, sharedStrings, dateStyles){
+    const doc = parseXml(xml);
     const rows = [];
-    const dimension = doc.querySelector("dimension");
-    const maxColGuess = dimension ? parseRangeMaxCol(dimension.getAttribute("ref") || "") : null;
-
     doc.querySelectorAll("sheetData > row").forEach(rowNode => {
       const row = [];
       rowNode.querySelectorAll("c").forEach(cell => {
         const ref = cell.getAttribute("r") || "";
-        const colIndex = colLettersToIndex(ref.replace(/[0-9]/g, "")) || 0;
-        const type = cell.getAttribute("t") || "";
-        const styleIndex = Number(cell.getAttribute("s"));
-        let value = "";
-        const vNode = cell.querySelector("v");
+        const idx = colIndex(ref.replace(/[0-9]/g,""));
+        const t = cell.getAttribute("t") || "";
+        const s = Number(cell.getAttribute("s"));
+        const v = cell.querySelector("v");
         const isNode = cell.querySelector("is");
-
-        if(type === "s" && vNode){
-          value = sharedStrings[Number(vNode.textContent)] ?? "";
-        }else if(type === "inlineStr" && isNode){
-          value = Array.from(isNode.querySelectorAll("t")).map(t => t.textContent || "").join("");
-        }else if(type === "b" && vNode){
-          value = vNode.textContent === "1" ? "TRUE" : "FALSE";
-        }else if(vNode){
-          const raw = vNode.textContent || "";
-          if(dateStyleSet.has(styleIndex) && raw !== "" && !isNaN(Number(raw))){
-            value = excelSerialDateToIso(Number(raw));
-          }else{
-            value = raw;
-          }
+        let value = "";
+        if(t === "s" && v){
+          value = sharedStrings[Number(v.textContent)] ?? "";
+        }else if(t === "inlineStr" && isNode){
+          value = Array.from(isNode.querySelectorAll("t")).map(n => n.textContent || "").join("");
+        }else if(t === "b" && v){
+          value = v.textContent === "1" ? "TRUE" : "FALSE";
+        }else if(v){
+          const raw = v.textContent || "";
+          value = (dateStyles.has(s) && raw !== "" && !isNaN(Number(raw))) ? excelSerialToDate(raw) : raw;
         }
-
-        row[colIndex] = value;
+        row[idx] = value;
       });
-      if(maxColGuess != null){
-        for(let i=0;i<=maxColGuess;i++) if(row[i] == null) row[i] = "";
-      }
       rows.push(row);
     });
 
-    const headerRowIndex = rows.findIndex(r => r.some(v => String(v).trim() !== ""));
-    if(headerRowIndex < 0) return [];
-    const headers = rows[headerRowIndex].map((h, idx) => String(h || `Column ${idx+1}`).trim() || `Column ${idx+1}`);
+    let headerIndex = -1;
+    for(let i=0;i<Math.min(rows.length, 10);i++){
+      const r = rows[i] || [];
+      if(r.some(v => normaliseHeader(v) === "location")){
+        headerIndex = i;
+        break;
+      }
+    }
+    if(headerIndex < 0){
+      headerIndex = rows.findIndex(r => r && r.some(v => String(v || "").trim() !== ""));
+    }
+    if(headerIndex < 0) return [];
+
+    const headers = rows[headerIndex].map((h, i) => String(h || `Column ${i+1}`).trim() || `Column ${i+1}`);
     const objects = [];
-    for(let i=headerRowIndex+1;i<rows.length;i++){
+    for(let i=headerIndex+1;i<rows.length;i++){
       const r = rows[i];
-      if(!r || !r.some(v => String(v).trim() !== "")) continue;
+      if(!r || !r.some(v => String(v || "").trim() !== "")) continue;
       const obj = {};
-      headers.forEach((h, idx) => { obj[h] = r[idx] ?? ""; });
+      headers.forEach((h, idx) => obj[h] = r[idx] ?? "");
       objects.push(obj);
     }
     return objects;
   }
 
-  function parseRangeMaxCol(ref){
-    const parts = ref.split(":");
-    const end = parts[1] || parts[0] || "";
-    const letters = end.replace(/[0-9]/g, "");
-    return colLettersToIndex(letters);
-  }
-
-  function colLettersToIndex(letters){
-    if(!letters) return 0;
-    let n = 0;
-    for(const ch of letters.toUpperCase()){
-      n = n * 26 + (ch.charCodeAt(0) - 64);
-    }
-    return n - 1;
-  }
-
-  function findHeader(headers, target){
-    const targetNorm = normaliseHeader(target);
-    const exact = headers.find(h => normaliseHeader(h) === targetNorm);
-    if(exact) return exact;
-    const loose = headers.find(h => normaliseHeader(h).includes(targetNorm) || targetNorm.includes(normaliseHeader(h)));
-    return loose || null;
-  }
-
-  function normaliseHeader(v){
-    return String(v || "").toLowerCase().replace(/[^a-z0-9]/g, "");
-  }
-
-  function mapCurrentEsrs(rows){
-    if(!rows.length) return [];
-    const headers = Object.keys(rows[0]);
-    const h = {
-      location: findHeader(headers, "Location"),
-      ime: findHeader(headers, "IME"),
-      elr: findHeader(headers, "ELR"),
-      days: findHeader(headers, "Number of Days"),
-      delayWeek: findHeader(headers, "Delay Mins Last Week"),
-      delayTotal: findHeader(headers, "Delay Mins Cumulative"),
-      reason: findHeader(headers, "Reason"),
-      responsibility: findHeader(headers, "Responsibility"),
-      comments: findHeader(headers, "Comments"),
-      action: findHeader(headers, "Short Term Action")
-    };
-    return rows.map(r => ({
-      location: h.location ? r[h.location] : "",
-      ime: h.ime ? r[h.ime] : "",
-      elr: h.elr ? r[h.elr] : "",
-      days: h.days ? r[h.days] : "",
-      delayWeek: h.delayWeek ? r[h.delayWeek] : "",
-      delayTotal: h.delayTotal ? r[h.delayTotal] : "",
-      reason: h.reason ? r[h.reason] : "",
-      responsibility: h.responsibility ? r[h.responsibility] : "",
-      comments: h.comments ? r[h.comments] : "",
-      action: h.action ? r[h.action] : ""
-    })).sort((a,b) => {
-      const av = normaliseNumber(a.delayTotal); const bv = normaliseNumber(b.delayTotal);
-      return (Number.isFinite(bv) ? bv : -Infinity) - (Number.isFinite(av) ? av : -Infinity);
-    });
-  }
-
-  function mapCurrentTsrs(rows){
-    if(!rows.length) return [];
-    const headers = Object.keys(rows[0]);
-    const h = {
-      location: findHeader(headers, "Location"),
-      cause: findHeader(headers, "Cause/Action"),
-      owner: findHeader(headers, "Action Owner")
-    };
-    return rows.map(r => ({
-      location: h.location ? r[h.location] : "",
-      cause: h.cause ? r[h.cause] : "",
-      owner: h.owner ? r[h.owner] : ""
-    }));
-  }
-
-  async function handleFileChange(ev){
-    const file = ev.target.files && ev.target.files[0];
-    if(!file) return;
-    setStatus("Parsing workbook…");
-    try{
-      const workbook = await parseXlsx(file);
-      const esrRows = workbook.sheets["Current ESRs"] || [];
-      const tsrRows = workbook.sheets["Current TSRs"] || [];
-
-      if(!workbook.sheetNames.includes("Current ESRs") && !workbook.sheetNames.includes("Current TSRs")){
-        throw new Error("Could not find sheets named exactly 'Current ESRs' or 'Current TSRs'.");
-      }
-
-      state.esrData = mapCurrentEsrs(esrRows);
-      state.tsrData = mapCurrentTsrs(tsrRows);
-      state.workbookMeta = { loaded:true, filename:file.name };
-      state.summaryBase = computeSummaryBase($("summary").value);
-      updateSummaryWithInsight();
-      setStatus(`Workbook parsed successfully: ${file.name}`, "ok");
-      render();
-    }catch(err){
-      console.error(err);
-      setStatus(`Upload failed: ${err.message}`, "warn");
-      alert(`Upload failed: ${err.message}`);
-    }
-  }
-
-  ["period","date","author","engineering","events"].forEach(id => {
-    $(id).addEventListener("input", render);
-    $(id).addEventListener("change", render);
-  });
-
-  $("summary").addEventListener("input", () => {
-    state.summaryBase = computeSummaryBase($("summary").value);
-    render();
-  });
-
-  $("fileInput").addEventListener("change", handleFileChange);
-  $("copyFullBtn").addEventListener("click", () => copyText(previewToPlainText()));
-  $("copyPreviewBtn").addEventListener("click", () => copyText($("preview").innerText));
-
-  hydrate();
+  init();
 })();
 </script>
 </body>
